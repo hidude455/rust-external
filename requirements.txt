@@ -1,0 +1,28 @@
+# MIT Method - Build Dependencies
+# This file lists all external dependencies required for the project
+
+## Core Dependencies (Windows SDK)
+- Windows 10/11 SDK (included with Visual Studio 2022)
+- DirectX 11 SDK (included with Windows SDK)
+
+## External Libraries
+- ImGui (v1.90+) - Git submodule in MenuPath/imgui
+  - Repository: https://github.com/ocornut/imgui.git
+  - Required for UI rendering
+
+## Build Tools
+- Visual Studio 2022 (v17.0+)
+  - C++20 language standard support
+  - Windows SDK integration
+  - v143 toolset
+
+## Optional Development Tools
+- Visual Studio Code (for code editing)
+- Git (for version control)
+- CMake (for alternative build system)
+
+## System Requirements
+- Windows 10/11 x64
+- DirectX 11 compatible GPU
+- 4GB+ RAM
+- Multi-core processor recommended

@@ -1,0 +1,231 @@
+# MIT Method - High-Performance C++ Utility
+
+A sophisticated C++ utility implementing the MIT Method pipeline with advanced memory management, DirectX 11 rendering, and combat systems for game enhancement.
+
+## Features
+
+### Core Architecture
+- **Low-latency Memory Management**: Win32 API-based process attachment and address translation
+- **Junk Code Generation**: Binary signature obfuscation and entry-point protection
+- **Exception Logging**: Comprehensive logging system with timestamped entries
+- **C++20 Standards**: Modern C++ implementation with improved memory safety
+
+### Visual & UI System
+- **DirectX 11 Overlay**: High-performance rendering with frame-limiting
+- **Krypton-Style ImGui Menu**: Smooth animations and modern UI design
+- **Configurable Color Pickers**: Customizable visual elements
+- **Performance Monitor**: Real-time FPS and frame-time tracking
+- **Modular ESP System**: Distance-based entity filtering with bounding boxes
+
+### Combat & Prediction Engine
+- **Recoil Compensation**: Weapon-specific pattern recognition and compensation
+- **Projectile Prediction**: Advanced trajectory solver with gravity calculations
+- **Input Smoothing**: Natural movement interpolation to avoid detection
+- **Aim Assistance**: Configurable FOV-based targeting with priority modes
+
+## Project Structure
+
+```
+rust/
+├── MITMethod.sln              # Visual Studio solution
+├── SourcePath/                # Core application code
+│   ├── MITMethod.vcxproj      # Project file
+│   ├── main.cpp               # Application entry point
+│   ├── Common.h               # Shared definitions
+│   ├── MemoryManager.h/.cpp   # Memory management system
+│   ├── Renderer.h/.cpp        # DirectX 11 renderer
+│   ├── Menu.h/.cpp            # ImGui menu system
+│   ├── ESP.h/.cpp             # ESP rendering system
+│   ├── Combat.h/.cpp          # Combat and prediction
+│   ├── Logger.h/.cpp          # Logging system
+│   └── JunkCode.h/.cpp        # Code obfuscation
+├── MenuPath/                  # UI resources
+│   └── imgui/                 # ImGui library
+└── Logs/                      # Application logs
+```
+
+## Build Requirements
+
+### Prerequisites
+- **Visual Studio 2022** with C++20 support
+- **Windows 10/11** (x64)
+- **DirectX 11 SDK** (included with VS2022)
+- **Git** (for ImGui dependency)
+
+### Build Steps
+
+1. **Clone Repository**
+   ```bash
+   git clone <repository-url>
+   cd rust
+   ```
+
+2. **Initialize ImGui Submodule**
+   ```bash
+   cd MenuPath
+   git clone https://github.com/ocornut/imgui.git
+   ```
+
+3. **Open Solution**
+   - Open `MITMethod.sln` in Visual Studio 2022
+   - Ensure configuration is set to **Release|x64**
+
+4. **Build Project**
+   - Build → Build Solution (Ctrl+Shift+B)
+   - Ensure all dependencies are resolved
+
+5. **Run Application**
+   - Launch the target game first
+   - Run the compiled executable
+
+## Configuration
+
+### Menu Controls
+- **INSERT**: Toggle menu visibility
+- **F1**: Toggle ESP
+- **F2**: Toggle recoil compensation
+- **F3**: Toggle aimbot
+- **F4**: Toggle projectile prediction
+
+### ESP Settings
+- Entity filtering (Players, Ore, Loot)
+- Distance-based rendering
+- Customizable colors per entity type
+- Bounding box rendering with corner highlights
+
+### Combat Settings
+- Weapon-specific recoil patterns
+- Smoothness adjustment for natural movement
+- FOV-based targeting
+- Priority modes (Distance/Health/Crosshair)
+
+### Visual Settings
+- Performance monitor overlay
+- Menu transparency and scaling
+- Glow effects and animations
+- Crosshair and FOV indicators
+
+## Technical Implementation
+
+### Memory Management
+The `MemoryManager` class provides:
+- Process attachment with elevated privileges
+- Template-based memory reading/writing
+- Pointer chain traversal
+- Pattern scanning for dynamic addresses
+- Thread-safe operations with mutex protection
+
+### Rendering Pipeline
+The `Renderer` class implements:
+- DirectX 11 device and context management
+- Frame rate limiting (60 FPS target)
+- ImGui integration with custom styling
+- Performance metrics collection
+- Resource cleanup and error handling
+
+### ESP System
+The `ESP` class features:
+- World-to-screen coordinate conversion
+- High-performance bounding box calculations
+- Batch rendering for optimal performance
+- Distance-based entity filtering
+- Modular rendering components
+
+### Combat Engine
+The `Combat` class provides:
+- Recoil pattern recognition and compensation
+- Projectile trajectory prediction
+- Input smoothing for natural movement
+- Weapon-specific configuration
+- Priority-based target selection
+
+## Security Features
+
+### Obfuscation
+- Junk code generation for binary variation
+- Entry point obfuscation
+- String encryption
+- Memory scrambling
+- Random delays and dummy operations
+
+### Anti-Detection
+- Natural input smoothing
+- Frame rate limiting
+- Memory access obfuscation
+- Configurable timing parameters
+- Stealth mode operation
+
+## Performance Optimization
+
+### Rendering
+- Batch entity rendering
+- Efficient world-to-screen conversion
+- Minimal CPU overhead
+- Frame rate limiting
+- Resource pooling
+
+### Memory Operations
+- Cached entity data
+- Optimized pointer chains
+- Thread-safe access
+- Efficient pattern scanning
+- Reduced memory footprint
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Process Attachment Failed**
+   - Ensure target game is running
+   - Check process name in `main.cpp`
+   - Run with administrator privileges
+
+2. **DirectX Initialization Failed**
+   - Update graphics drivers
+   - Ensure DirectX 11 support
+   - Check window handle detection
+
+3. **ImGui Not Rendering**
+   - Verify ImGui submodule is initialized
+   - Check shader compilation
+   - Ensure proper D3D11 context
+
+4. **Performance Issues**
+   - Adjust ESP distance limits
+   - Disable unnecessary visual effects
+   - Optimize entity filtering
+
+### Logging
+All application events are logged to `Logs/MITMethod_YYYYMMDD_HHMMSS.log` with timestamps and severity levels.
+
+## Development Notes
+
+### Code Style
+- Modern C++20 standards
+- RAII resource management
+- Exception-safe design patterns
+- Comprehensive error handling
+- Thread-safe implementations
+
+### Architecture
+- Modular component design
+- Interface-based programming
+- Factory pattern for components
+- Observer pattern for events
+- Strategy pattern for algorithms
+
+## License
+
+This project is for educational and research purposes only. Use responsibly and in accordance with applicable laws and terms of service.
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Implement changes with proper testing
+4. Submit pull requests with documentation
+5. Follow coding standards and best practices
+
+## Disclaimer
+
+This software is intended for educational purposes only. Users are responsible for ensuring compliance with applicable laws, terms of service, and ethical guidelines. The authors are not responsible for misuse or any consequences resulting from the use of this software.
