@@ -1,0 +1,414 @@
+﻿  AdvancedMenu.cpp
+  CodeMutator.cpp
+C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\AdvancedMenu.cpp(129,32): error C2589: '(': illegal token on right side of '::'
+C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\AdvancedMenu.cpp(129,32): error C2059: syntax error: ')'
+C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\AdvancedMenu.cpp(132,32): error C2589: '(': illegal token on right side of '::'
+C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\AdvancedMenu.cpp(132,32): error C2059: syntax error: ')'
+C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\AdvancedMenu.cpp(138,44): error C2589: '(': illegal token on right side of '::'
+C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\AdvancedMenu.cpp(138,44): error C2059: syntax error: ')'
+C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\AdvancedMenu.cpp(171,21): error C2429: language feature 'structured bindings' requires compiler flag '/std:c++17'
+C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\CodeMutator.cpp(358,75): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\CodeMutator.cpp(386,61): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\CodeMutator.cpp(414,66): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\CodeMutator.cpp(474,66): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\CodeMutator.cpp(550,42): error C2110: '+': cannot add two pointers
+  Protection.cpp
+C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(250,44): error C2665: 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string': no overloaded function could convert all the argument types
+      C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\xstring(768,5):
+      could be 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string(const _Elem *const )'
+          with
+          [
+              _Elem=char
+          ]
+          C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(250,44):
+          'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string(const _Elem *const )': cannot convert argument 1 from 'WCHAR [260]' to 'const _Elem *const '
+          with
+          [
+              _Elem=char
+          ]
+              C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(250,49):
+              Types pointed to are unrelated; conversion requires reinterpret_cast, C-style cast or parenthesized function-style cast
+      C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\xstring(1340,5):
+      or       'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string(std::initializer_list<_Elem>,const _Alloc &)'
+          with
+          [
+              _Elem=char,
+              _Alloc=std::allocator<char>
+          ]
+          C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(250,44):
+          'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string(std::initializer_list<_Elem>,const _Alloc &)': cannot convert argument 1 from 'WCHAR [260]' to 'std::initializer_list<_Elem>'
+          with
+          [
+              _Elem=char,
+              _Alloc=std::allocator<char>
+          ]
+          and
+          [
+              _Elem=char
+          ]
+              C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(250,49):
+              'std::initializer_list<_Elem>::initializer_list': no overloaded function could convert all the argument types
+          with
+          [
+              _Elem=char
+          ]
+                  C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\initializer_list(51,1):
+                  could be 'std::initializer_list<_Elem>::initializer_list(std::initializer_list<_Elem> &&)'
+          with
+          [
+              _Elem=char
+          ]
+                      C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(250,49):
+                      'std::initializer_list<_Elem>::initializer_list(std::initializer_list<_Elem> &&)': cannot convert argument 1 from 'WCHAR [260]' to 'std::initializer_list<_Elem> &&'
+          with
+          [
+              _Elem=char
+          ]
+                          C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(250,49):
+                          Reason: cannot convert from 'WCHAR [260]' to 'std::initializer_list<_Elem>'
+          with
+          [
+              _Elem=char
+          ]
+                          C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(250,49):
+                          Conversion requires a second user-defined-conversion operator or constructor
+                  C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\initializer_list(51,1):
+                  or       'std::initializer_list<_Elem>::initializer_list(const std::initializer_list<_Elem> &)'
+          with
+          [
+              _Elem=char
+          ]
+                      C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(250,49):
+                      'std::initializer_list<_Elem>::initializer_list(const std::initializer_list<_Elem> &)': cannot convert argument 1 from 'WCHAR [260]' to 'const std::initializer_list<_Elem> &'
+          with
+          [
+              _Elem=char
+          ]
+                          C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(250,49):
+                          Reason: cannot convert from 'WCHAR [260]' to 'const std::initializer_list<_Elem>'
+          with
+          [
+              _Elem=char
+          ]
+                          C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(250,49):
+                          Conversion requires a second user-defined-conversion operator or constructor
+                  C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(250,49):
+                  while trying to match the argument list '(WCHAR [260])'
+      C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\xstring(712,5):
+      or       'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string(const _Alloc &) noexcept'
+          with
+          [
+              _Alloc=std::allocator<char>
+          ]
+          C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(250,44):
+          'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string(const _Alloc &) noexcept': cannot convert argument 1 from 'WCHAR [260]' to 'const _Alloc &'
+          with
+          [
+              _Alloc=std::allocator<char>
+          ]
+              C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(250,49):
+              Reason: cannot convert from 'WCHAR [260]' to 'const _Alloc'
+          with
+          [
+              _Alloc=std::allocator<char>
+          ]
+              C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(250,49):
+              'std::allocator<char>::allocator': no overloaded function could convert all the argument types
+                  C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\xmemory(976,5):
+                  could be 'std::allocator<char>::allocator(const std::allocator<char> &) noexcept'
+                      C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(250,49):
+                      'std::allocator<char>::allocator(const std::allocator<char> &) noexcept': cannot convert argument 1 from 'WCHAR [260]' to 'const std::allocator<char> &'
+                          C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(250,49):
+                          Reason: cannot convert from 'WCHAR [260]' to 'const std::allocator<char>'
+                          C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(250,49):
+                          Conversion requires a second user-defined-conversion operator or constructor
+                  C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\xmemory(974,5):
+                  or       'std::allocator<char>::allocator(void) noexcept'
+                      C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(250,49):
+                      'std::allocator<char>::allocator': function does not take 1 arguments
+                  C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\xmemory(978,5):
+                  or       'std::allocator<char>::allocator(const std::allocator<_Other> &) noexcept'
+                  C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(250,49):
+                  while trying to match the argument list '(WCHAR [260])'
+      C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\xstring(798,5):
+      or       'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string(_Iter,_Iter,const _Alloc &)'
+          with
+          [
+              _Alloc=std::allocator<char>
+          ]
+          C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(250,44):
+          'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string(_Iter,_Iter,const _Alloc &)': expects 3 arguments - 1 provided
+          with
+          [
+              _Alloc=std::allocator<char>
+          ]
+      C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(250,44):
+      while trying to match the argument list '(WCHAR [260])'
+  
+C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(286,44): error C2665: 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string': no overloaded function could convert all the argument types
+      C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\xstring(768,5):
+      could be 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string(const _Elem *const )'
+          with
+          [
+              _Elem=char
+          ]
+          C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(286,44):
+          'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string(const _Elem *const )': cannot convert argument 1 from 'WCHAR [260]' to 'const _Elem *const '
+          with
+          [
+              _Elem=char
+          ]
+              C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(286,49):
+              Types pointed to are unrelated; conversion requires reinterpret_cast, C-style cast or parenthesized function-style cast
+      C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\xstring(1340,5):
+      or       'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string(std::initializer_list<_Elem>,const _Alloc &)'
+          with
+          [
+              _Elem=char,
+              _Alloc=std::allocator<char>
+          ]
+          C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(286,44):
+          'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string(std::initializer_list<_Elem>,const _Alloc &)': cannot convert argument 1 from 'WCHAR [260]' to 'std::initializer_list<_Elem>'
+          with
+          [
+              _Elem=char,
+              _Alloc=std::allocator<char>
+          ]
+          and
+          [
+              _Elem=char
+          ]
+              C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(286,49):
+              'std::initializer_list<_Elem>::initializer_list': no overloaded function could convert all the argument types
+          with
+          [
+              _Elem=char
+          ]
+                  C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\initializer_list(51,1):
+                  could be 'std::initializer_list<_Elem>::initializer_list(std::initializer_list<_Elem> &&)'
+          with
+          [
+              _Elem=char
+          ]
+                      C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(286,49):
+                      'std::initializer_list<_Elem>::initializer_list(std::initializer_list<_Elem> &&)': cannot convert argument 1 from 'WCHAR [260]' to 'std::initializer_list<_Elem> &&'
+          with
+          [
+              _Elem=char
+          ]
+                          C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(286,49):
+                          Reason: cannot convert from 'WCHAR [260]' to 'std::initializer_list<_Elem>'
+          with
+          [
+              _Elem=char
+          ]
+                          C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(286,49):
+                          Conversion requires a second user-defined-conversion operator or constructor
+                  C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\initializer_list(51,1):
+                  or       'std::initializer_list<_Elem>::initializer_list(const std::initializer_list<_Elem> &)'
+          with
+          [
+              _Elem=char
+          ]
+                      C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(286,49):
+                      'std::initializer_list<_Elem>::initializer_list(const std::initializer_list<_Elem> &)': cannot convert argument 1 from 'WCHAR [260]' to 'const std::initializer_list<_Elem> &'
+          with
+          [
+              _Elem=char
+          ]
+                          C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(286,49):
+                          Reason: cannot convert from 'WCHAR [260]' to 'const std::initializer_list<_Elem>'
+          with
+          [
+              _Elem=char
+          ]
+                          C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(286,49):
+                          Conversion requires a second user-defined-conversion operator or constructor
+                  C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(286,49):
+                  while trying to match the argument list '(WCHAR [260])'
+      C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\xstring(712,5):
+      or       'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string(const _Alloc &) noexcept'
+          with
+          [
+              _Alloc=std::allocator<char>
+          ]
+          C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(286,44):
+          'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string(const _Alloc &) noexcept': cannot convert argument 1 from 'WCHAR [260]' to 'const _Alloc &'
+          with
+          [
+              _Alloc=std::allocator<char>
+          ]
+              C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(286,49):
+              Reason: cannot convert from 'WCHAR [260]' to 'const _Alloc'
+          with
+          [
+              _Alloc=std::allocator<char>
+          ]
+              C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(286,49):
+              'std::allocator<char>::allocator': no overloaded function could convert all the argument types
+                  C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\xmemory(976,5):
+                  could be 'std::allocator<char>::allocator(const std::allocator<char> &) noexcept'
+                      C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(286,49):
+                      'std::allocator<char>::allocator(const std::allocator<char> &) noexcept': cannot convert argument 1 from 'WCHAR [260]' to 'const std::allocator<char> &'
+                          C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(286,49):
+                          Reason: cannot convert from 'WCHAR [260]' to 'const std::allocator<char>'
+                          C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(286,49):
+                          Conversion requires a second user-defined-conversion operator or constructor
+                  C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\xmemory(974,5):
+                  or       'std::allocator<char>::allocator(void) noexcept'
+                      C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(286,49):
+                      'std::allocator<char>::allocator': function does not take 1 arguments
+                  C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\xmemory(978,5):
+                  or       'std::allocator<char>::allocator(const std::allocator<_Other> &) noexcept'
+                  C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(286,49):
+                  while trying to match the argument list '(WCHAR [260])'
+      C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\xstring(798,5):
+      or       'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string(_Iter,_Iter,const _Alloc &)'
+          with
+          [
+              _Alloc=std::allocator<char>
+          ]
+          C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(286,44):
+          'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string(_Iter,_Iter,const _Alloc &)': expects 3 arguments - 1 provided
+          with
+          [
+              _Alloc=std::allocator<char>
+          ]
+      C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(286,44):
+      while trying to match the argument list '(WCHAR [260])'
+  
+C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(318,44): error C2665: 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string': no overloaded function could convert all the argument types
+      C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\xstring(768,5):
+      could be 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string(const _Elem *const )'
+          with
+          [
+              _Elem=char
+          ]
+          C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(318,44):
+          'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string(const _Elem *const )': cannot convert argument 1 from 'WCHAR [260]' to 'const _Elem *const '
+          with
+          [
+              _Elem=char
+          ]
+              C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(318,49):
+              Types pointed to are unrelated; conversion requires reinterpret_cast, C-style cast or parenthesized function-style cast
+      C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\xstring(1340,5):
+      or       'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string(std::initializer_list<_Elem>,const _Alloc &)'
+          with
+          [
+              _Elem=char,
+              _Alloc=std::allocator<char>
+          ]
+          C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(318,44):
+          'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string(std::initializer_list<_Elem>,const _Alloc &)': cannot convert argument 1 from 'WCHAR [260]' to 'std::initializer_list<_Elem>'
+          with
+          [
+              _Elem=char,
+              _Alloc=std::allocator<char>
+          ]
+          and
+          [
+              _Elem=char
+          ]
+              C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(318,49):
+              'std::initializer_list<_Elem>::initializer_list': no overloaded function could convert all the argument types
+          with
+          [
+              _Elem=char
+          ]
+                  C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\initializer_list(51,1):
+                  could be 'std::initializer_list<_Elem>::initializer_list(std::initializer_list<_Elem> &&)'
+          with
+          [
+              _Elem=char
+          ]
+                      C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(318,49):
+                      'std::initializer_list<_Elem>::initializer_list(std::initializer_list<_Elem> &&)': cannot convert argument 1 from 'WCHAR [260]' to 'std::initializer_list<_Elem> &&'
+          with
+          [
+              _Elem=char
+          ]
+                          C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(318,49):
+                          Reason: cannot convert from 'WCHAR [260]' to 'std::initializer_list<_Elem>'
+          with
+          [
+              _Elem=char
+          ]
+                          C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(318,49):
+                          Conversion requires a second user-defined-conversion operator or constructor
+                  C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\initializer_list(51,1):
+                  or       'std::initializer_list<_Elem>::initializer_list(const std::initializer_list<_Elem> &)'
+          with
+          [
+              _Elem=char
+          ]
+                      C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(318,49):
+                      'std::initializer_list<_Elem>::initializer_list(const std::initializer_list<_Elem> &)': cannot convert argument 1 from 'WCHAR [260]' to 'const std::initializer_list<_Elem> &'
+          with
+          [
+              _Elem=char
+          ]
+                          C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(318,49):
+                          Reason: cannot convert from 'WCHAR [260]' to 'const std::initializer_list<_Elem>'
+          with
+          [
+              _Elem=char
+          ]
+                          C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(318,49):
+                          Conversion requires a second user-defined-conversion operator or constructor
+                  C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(318,49):
+                  while trying to match the argument list '(WCHAR [260])'
+      C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\xstring(712,5):
+      or       'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string(const _Alloc &) noexcept'
+          with
+          [
+              _Alloc=std::allocator<char>
+          ]
+          C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(318,44):
+          'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string(const _Alloc &) noexcept': cannot convert argument 1 from 'WCHAR [260]' to 'const _Alloc &'
+          with
+          [
+              _Alloc=std::allocator<char>
+          ]
+              C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(318,49):
+              Reason: cannot convert from 'WCHAR [260]' to 'const _Alloc'
+          with
+          [
+              _Alloc=std::allocator<char>
+          ]
+              C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(318,49):
+              'std::allocator<char>::allocator': no overloaded function could convert all the argument types
+                  C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\xmemory(976,5):
+                  could be 'std::allocator<char>::allocator(const std::allocator<char> &) noexcept'
+                      C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(318,49):
+                      'std::allocator<char>::allocator(const std::allocator<char> &) noexcept': cannot convert argument 1 from 'WCHAR [260]' to 'const std::allocator<char> &'
+                          C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(318,49):
+                          Reason: cannot convert from 'WCHAR [260]' to 'const std::allocator<char>'
+                          C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(318,49):
+                          Conversion requires a second user-defined-conversion operator or constructor
+                  C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\xmemory(974,5):
+                  or       'std::allocator<char>::allocator(void) noexcept'
+                      C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(318,49):
+                      'std::allocator<char>::allocator': function does not take 1 arguments
+                  C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\xmemory(978,5):
+                  or       'std::allocator<char>::allocator(const std::allocator<_Other> &) noexcept'
+                  C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(318,49):
+                  while trying to match the argument list '(WCHAR [260])'
+      C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\xstring(798,5):
+      or       'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string(_Iter,_Iter,const _Alloc &)'
+          with
+          [
+              _Alloc=std::allocator<char>
+          ]
+          C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(318,44):
+          'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string(_Iter,_Iter,const _Alloc &)': expects 3 arguments - 1 provided
+          with
+          [
+              _Alloc=std::allocator<char>
+          ]
+      C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(318,44):
+      while trying to match the argument list '(WCHAR [260])'
+  
+C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(449,27): warning C4244: 'initializing': conversion from 'DWORD64' to 'DWORD', possible loss of data
+C:\Users\lundk\OneDrive\Desktop\rust\SourcePath\Protection.cpp(454,25): warning C4244: 'initializing': conversion from 'DWORD64' to 'DWORD', possible loss of data
+  Generating Code...
