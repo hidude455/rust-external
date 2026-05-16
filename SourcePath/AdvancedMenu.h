@@ -4,6 +4,9 @@
 #include "VisualEffects.h"
 #include "../MenuPath/imgui/imgui.h"
 #include <memory>
+#include <unordered_map>
+#include <algorithm>
+#include <psapi.h>
 
 namespace UI {
     
@@ -72,7 +75,7 @@ namespace UI {
     private:
         std::unique_ptr<Graphics::CVisualEffects> m_visualEffects;
         AdvancedMenuConfig m_config;
-        Renderer* m_renderer;
+        MIT::Renderer* m_renderer;
         
         // Animation state
         float m_menuAlpha;
@@ -119,7 +122,7 @@ namespace UI {
         void ClearNotifications();
         
     public:
-        CAdvancedMenu(Renderer* renderer);
+        CAdvancedMenu(void* renderer);
         ~CAdvancedMenu();
         
         // Initialization

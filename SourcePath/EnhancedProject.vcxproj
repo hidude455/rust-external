@@ -1,3 +1,4 @@
+
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
@@ -38,11 +39,11 @@
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
     <IntrinsicFunctions>true</IntrinsicFunctions>
-    <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-    <OmitFramePointers>true</OmitFramePointers>
+    <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
+    <OmitFramePointers>false</OmitFramePointers>
     <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-    <StringPooling>true</StringPooling>
-    <BufferSecurityCheck>false</BufferSecurityCheck>
+    <StringPooling>false</StringPooling>
+    <BufferSecurityCheck>true</BufferSecurityCheck>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -85,7 +86,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxgi.lib;user32.lib;gdi32.lib;kernel32.lib;psapi.lib;tlhelp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxgi.lib;user32.lib;gdi32.lib;kernel32.lib;psapi.lib;tlhelp32.lib;setupapi.lib;wbemuuid.lib;iphlpapi.lib;netapi32.lib;advapi32.lib;shlwapi.lib;shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(ProjectDir)\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TreatLinkerWarningAsErrors>false</TreatLinkerWarningAsErrors>
     </Link>
@@ -93,33 +94,38 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
       <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)\..\MenuPath;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ConformanceMode>false</ConformanceMode>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <Optimization>MaxSpeed</Optimization>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <OmitFramePointers>true</OmitFramePointers>
-      <StringPooling>true</StringPooling>
-      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <Optimization>Disabled</Optimization>
+      <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
+      <OmitFramePointers>false</OmitFramePointers>
+      <StringPooling>false</StringPooling>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
-      <FloatingPointModel>Fast</FloatingPointModel>
-      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
-      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <RemoveUnreferencedCodeData>false</RemoveUnreferencedCodeData>
       <ControlFlowGuard>false</ControlFlowGuard>
+      <DisableSpecificWarnings>4244;4267;4838</DisableSpecificWarnings>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxgi.lib;user32.lib;gdi32.lib;kernel32.lib;psapi.lib;tlhelp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxgi.lib;user32.lib;gdi32.lib;kernel32.lib;psapi.lib;tlhelp32.lib;setupapi.lib;wbemuuid.lib;iphlpapi.lib;netapi32.lib;advapi32.lib;shlwapi.lib;shell32.lib;winmm.lib;ws2_32.lib;crypt32.lib;wininet.lib;urlmon.lib;ole32.lib;oleaut32.lib;uuid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(ProjectDir)\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TreatLinkerWarningAsErrors>false</TreatLinkerWarningAsErrors>
       <SetChecksum>true</SetChecksum>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <OptimizeReferences>false</OptimizeReferences>
+      <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <RandomizedBaseAddress>true</RandomizedBaseAddress>
       <DataExecutionPrevention>true</DataExecutionPrevention>
       <FixedBaseAddress>false</FixedBaseAddress>
@@ -137,6 +143,10 @@
     <ClCompile Include="CodeMutator.cpp" />
     <ClCompile Include="Protection.cpp" />
     <ClCompile Include="DMAController.cpp" />
+    <ClCompile Include="AdvancedSpoofer.cpp" />
+    <ClCompile Include="SpooferGUI.cpp" />
+    <ClCompile Include="RustAntiCheatEvasion.cpp" />
+    <ClCompile Include="CustomLoaderGUI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core.h" />
@@ -147,6 +157,10 @@
     <ClInclude Include="CodeMutator.h" />
     <ClInclude Include="Protection.h" />
     <ClInclude Include="DMAController.h" />
+    <ClInclude Include="AdvancedSpoofer.h" />
+    <ClInclude Include="SpooferGUI.h" />
+    <ClInclude Include="RustAntiCheatEvasion.h" />
+    <ClInclude Include="AdvancedObfuscation.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" />

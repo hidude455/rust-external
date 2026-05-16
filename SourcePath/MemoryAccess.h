@@ -108,13 +108,9 @@ namespace GameEnhance {
                 // DMA-based memory access
                 uint64_t offset = address - m_activeDevice->processBase;
                 if (offset < m_activeDevice->memSize) {
-                    __try {
-                        value = *reinterpret_cast<T*>((uint64_t)m_activeDevice->mappedMemory + offset);
-                        success = true;
-                    } __except(EXCEPTION_EXECUTE_HANDLER) {
-                        // Handle access violations
-                        success = false;
-                    }
+                    // Direct access without SEH for x64 compatibility
+                    value = *reinterpret_cast<T*>((uint64_t)m_activeDevice->mappedMemory + offset);
+                    success = true;
                 }
             } else {
                 // Fallback to Windows API
@@ -157,12 +153,9 @@ namespace GameEnhance {
                 // DMA-based memory write
                 uint64_t offset = address - m_activeDevice->processBase;
                 if (offset < m_activeDevice->memSize) {
-                    __try {
-                        *reinterpret_cast<T*>((uint64_t)m_activeDevice->mappedMemory + offset) = value;
-                        success = true;
-                    } __except(EXCEPTION_EXECUTE_HANDLER) {
-                        success = false;
-                    }
+                    // Direct access without SEH for x64 compatibility
+                    *reinterpret_cast<T*>((uint64_t)m_activeDevice->mappedMemory + offset) = value;
+                    success = true;
                 }
             } else {
                 // Fallback to Windows API

@@ -353,7 +353,7 @@ namespace Graphics {
     }
     
     void CVisualEffects::SetEffectIntensity(float intensity) {
-        m_effectIntensity = std::clamp(intensity, 0.0f, 1.0f);
+        m_effectIntensity = (intensity < 0.0f) ? 0.0f : (intensity > 1.0f) ? 1.0f : intensity;
     }
     
     void CVisualEffects::SetMaxParticles(size_t maxCount) {

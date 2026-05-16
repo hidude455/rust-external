@@ -6,7 +6,8 @@
  */
 
 #include "HardwareSpoofer.h"
-#include <iostream>
+#include "Core.h"
+#include <algorithm>
 #include <fstream>
 #include <thread>
 #include <chrono>

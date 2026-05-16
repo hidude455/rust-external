@@ -6,9 +6,12 @@
  */
 
 #include "NetworkBypass.h"
+#include "Core.h"
 #include <algorithm>
 #include <fstream>
 #include <sstream>
+
+using namespace GameEnhance;
 
 namespace NetworkBypass {
     

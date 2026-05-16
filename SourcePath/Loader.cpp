@@ -1,8 +1,12 @@
 #include "Loader.h"
-#include <iostream>
+#include <tlhelp32.h>
+#include <psapi.h>
 #include <algorithm>
+#include "AdvancedObfuscation.h"
 
 #pragma comment(lib, "psapi.lib")
+
+using namespace AdvancedObfuscation;
 
 namespace Loader {
 
@@ -10,11 +14,19 @@ namespace Loader {
         : m_status(LoaderStatus::Idle), m_running(false) {
         std::random_device rd;
         m_rng = std::mt19937(rd());
+        
+        // Reserve capacity for vectors to avoid reallocations
+        m_foundProcesses.reserve(32);
+        m_injectionHistory.reserve(100);
     }
 
     CLoader::~CLoader() { Shutdown(); }
 
     bool CLoader::Initialize() {
+        // Apply timing obfuscation during initialization
+        TimingObfuscator::ObfuscateTiming();
+        ControlFlowObfuscator::RandomDelay();
+        
         SetStatus(LoaderStatus::Idle, "Loader initialized");
         return true;
     }
@@ -220,6 +232,10 @@ namespace Loader {
     }
 
     bool CLoader::InjectLoadLibrary(const ProcessInfo& target) {
+        // Apply control flow obfuscation before injection
+        ControlFlowObfuscator::ObfuscatedLoop(5);
+        ControlFlowObfuscator::JunkCode();
+        
         HANDLE hProcess = OpenTargetProcess(target.pid, true);
         if (!hProcess) return false;
 

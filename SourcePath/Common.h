@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <mutex>
 #include <thread>
+#include "../MenuPath/imgui/imgui.h"
 
 namespace MIT {
     constexpr auto SOURCE_PATH = "c:/Users/lundk/OneDrive/Desktop/rust/SourcePath";

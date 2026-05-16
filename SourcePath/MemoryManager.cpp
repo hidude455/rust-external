@@ -1,6 +1,7 @@
 #include "MemoryManager.h"
 #include <tlhelp32.h>
 #include <psapi.h>
+#include <algorithm>
 
 namespace MIT {
     MemoryManager::MemoryManager() : processHandle(nullptr), processId(0), isAttached(false), gen(rd()), dis(0, 1000) {

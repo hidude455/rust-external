@@ -1,4 +1,5 @@
 #include "DMAController.h"
+#include <algorithm>
 #include <tlhelp32.h>
 #include <psapi.h>
 #include <random>

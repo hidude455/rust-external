@@ -1,15 +1,30 @@
 #include "AdvancedMenu.h"
+#include "Renderer.h"
 #include <algorithm>
 #include <fstream>
 #include <chrono>
+#include <unordered_map>
+#include <psapi.h>
+#include "../MenuPath/imgui/imgui.h"
+
+#define NOMINMAX
+#include <windows.h>
+#undef NOMINMAX
+
+// Stub for ImGui_ImplWin32_WndProcHandler if not available
+extern "C" LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 namespace UI {
     
-    CAdvancedMenu::CAdvancedMenu(Renderer* renderer) 
-        : m_renderer(renderer), m_menuAlpha(0.0f), m_tabTransitionProgress(0.0f), 
+    CAdvancedMenu::CAdvancedMenu(void* renderer) 
+        : m_renderer(static_cast<MIT::Renderer*>(renderer)), m_menuAlpha(0.0f), m_tabTransitionProgress(0.0f), 
           m_backgroundOffset(0.0f) {
         m_lastUpdateTime = std::chrono::high_resolution_clock::now();
         m_tabChangeTime = m_lastUpdateTime;
+        
+        // Reserve capacity for vectors to avoid reallocations
+        m_notifications.reserve(20);
+        m_buttonStates.reserve(50);
         
         // Initialize visual effects
         m_visualEffects = std::make_unique<Graphics::CVisualEffects>();
@@ -161,7 +176,8 @@ namespace UI {
     
     void CAdvancedMenu::UpdateButtonStates() {
         // Update button hover and press animations
-        for (auto& [id, state] : m_buttonStates) {
+        for (auto& pair : m_buttonStates) {
+            auto& state = pair.second;
             // Smooth hover animation
             float targetHoverProgress = state.isHovered ? 1.0f : 0.0f;
             state.hoverProgress += (targetHoverProgress - state.hoverProgress) * 0.1f;
@@ -456,7 +472,8 @@ namespace UI {
     }
     
     float CAdvancedMenu::SmoothStep(float edge0, float edge1, float x) {
-        float t = std::clamp((x - edge0) / (edge1 - edge0), 0.0f, 1.0f);
+        float t = (x - edge0) / (edge1 - edge0);
+        t = (t < 0.0f) ? 0.0f : (t > 1.0f) ? 1.0f : t;
         return t * t * (3.0f - 2.0f * t);
     }
     

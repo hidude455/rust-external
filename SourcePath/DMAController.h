@@ -77,14 +77,10 @@ namespace Hardware {
             
             T value = {};
             if (m_activeDevice->mappedMemory) {
-                __try {
-                    UINT64 offset = address - m_processBase;
-                    if (offset < m_activeDevice->memorySize) {
-                        value = *reinterpret_cast<T*>((UINT64)m_activeDevice->mappedMemory + offset);
-                    }
-                } __except(EXCEPTION_EXECUTE_HANDLER) {
-                    // Handle access violations gracefully
-                    value = T{};
+                // Direct access without SEH for x64 compatibility
+                UINT64 offset = address - m_processBase;
+                if (offset < m_activeDevice->memorySize) {
+                    value = *reinterpret_cast<T*>((UINT64)m_activeDevice->mappedMemory + offset);
                 }
             }
             
@@ -105,14 +101,11 @@ namespace Hardware {
             
             bool success = false;
             if (m_activeDevice->mappedMemory) {
-                __try {
-                    UINT64 offset = address - m_processBase;
-                    if (offset < m_activeDevice->memorySize) {
-                        *reinterpret_cast<T*>((UINT64)m_activeDevice->mappedMemory + offset) = value;
-                        success = true;
-                    }
-                } __except(EXCEPTION_EXECUTE_HANDLER) {
-                    success = false;
+                // Direct access without SEH for x64 compatibility
+                UINT64 offset = address - m_processBase;
+                if (offset < m_activeDevice->memorySize) {
+                    *reinterpret_cast<T*>((UINT64)m_activeDevice->mappedMemory + offset) = value;
+                    success = true;
                 }
             }
             

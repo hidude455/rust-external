@@ -6,7 +6,8 @@
  */
 
 #include "VPNManager.h"
-#include <wininet.h>
+#include "Core.h"
+#include <algorithm>
 #include <ws2tcpip.h>
 #include <iostream>
 #include <fstream>

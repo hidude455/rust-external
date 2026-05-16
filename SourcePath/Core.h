@@ -163,9 +163,5 @@ namespace GameEnhance {
         }
     };
     
-    // Static member definitions
-    std::random_device RandomGen::rd;
-    std::mt19937 RandomGen::gen(RandomGen::rd());
-    std::uniform_int_distribution<> RandomGen::dis(0, 1000);
     
 } // namespace GameEnhance

@@ -6,9 +6,12 @@
  */
 
 #include "RustFeatures.h"
+#include "Core.h"
 #include <algorithm>
 #include <cmath>
 #include <fstream>
+
+using namespace GameEnhance;
 
 namespace RustFeatures {
     

@@ -6,8 +6,13 @@
  */
 
 #include "MemoryAccess.h"
+#include <tlhelp32.h>
+#include <psapi.h>
 #include <algorithm>
-#include <random>
+
+// Define custom memory protection constants
+#define PAGE_READABLE (PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY | PAGE_READONLY | PAGE_READWRITE | PAGE_WRITECOPY)
+#define PAGE_WRITEABLE (PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY | PAGE_READWRITE | PAGE_WRITECOPY)
 
 namespace GameEnhance {
     
@@ -479,7 +484,7 @@ namespace GameEnhance {
     
     void CMemoryAccess::EnableStealthMode() {
         // Enable additional stealth measures
-        ClearAccessHistory();
+        // ClearAccessHistory(); // Not available on this platform
     }
     
     void CMemoryAccess::DisableStealthMode() {

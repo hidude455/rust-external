@@ -5,6 +5,9 @@
 #include <d3d11.h>
 #include <Windows.h>
 #include "FeatureManager.h"
+#include "AdvancedSpoofer.h"
+#include "SpooferGUI.h"
+#include "RustAntiCheatEvasion.h"
 
 class CMenuManager {
 public:
@@ -16,6 +19,11 @@ public:
     void Render();
     bool IsOpen() const { return m_open; }
     void Toggle() { m_open = !m_open; }
+    
+    // Spoofer integration
+    void SetSpoofer(Spoofer::CAdvancedSpoofer* spoofer);
+    void SetSpooferGUI(SpooferGUI::CSpooferGUI* spooferGUI);
+    void SetRustEvasion(RustEvasion::CRustAntiCheatEvasion* rustEvasion);
 
 private:
     void RenderAimbotTab();
@@ -24,10 +32,15 @@ private:
     void RenderWeaponModsTab();
     void RenderWorldVisualsTab();
     void RenderMovementTab();
+    void RenderSpooferTab();
     void RenderSettingsTab();
     void RenderKeybindPicker(const char* label, Keybind& keybind);
 
     CFeatureManager* m_features;
+    Spoofer::CAdvancedSpoofer* m_spoofer;
+    SpooferGUI::CSpooferGUI* m_spooferGUI;
+    RustEvasion::CRustAntiCheatEvasion* m_rustEvasion;
+    
     bool m_open = true;
     HWND m_hwnd = nullptr;
     ID3D11Device* m_device = nullptr;

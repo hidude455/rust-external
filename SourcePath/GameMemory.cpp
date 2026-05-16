@@ -1,6 +1,7 @@
 #include "GameMemory.h"
+#include <tlhelp32.h>
+#include <psapi.h>
 #include <algorithm>
-#include <cmath>
 
 namespace Memory {
 

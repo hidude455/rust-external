@@ -6,9 +6,13 @@
  */
 
 #include "CodeMutator.h"
+#include "Core.h"
 #include <algorithm>
-#include <fstream>
+#include <random>
+#include <psapi.h>
 #include <sstream>
+
+using namespace GameEnhance;
 
 namespace GameEnhance {
     
@@ -533,6 +537,8 @@ namespace GameEnhance {
         sprintf_s(timestamp, "[%04d-%02d-%02d %02d:%02d:%02d] ", 
                 st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond);
         
+        std::string timestampStr(timestamp);
+        
         std::string typeStr;
         switch (type) {
             case MutationType::JUNK_INSERTION: typeStr = "JUNK_INSERTION"; break;
@@ -543,7 +549,7 @@ namespace GameEnhance {
             case MutationType::DEAD_CODE_INSERTION: typeStr = "DEAD_CODE_INSERTION"; break;
         }
         
-        std::string logEntry = timestamp + "Mutated block '" + blockName + "' with " + typeStr;
+        std::string logEntry = timestampStr + "Mutated block '" + blockName + "' with " + typeStr;
         
         // Write to log file
         std::ofstream logFile("mutation.log", std::ios::app);

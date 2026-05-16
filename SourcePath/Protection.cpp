@@ -4,6 +4,9 @@
 #include <intrin.h>
 #include <random>
 #include <algorithm>
+#include "AdvancedObfuscation.h"
+
+using namespace AdvancedObfuscation;
 
 namespace Security {
     
@@ -24,6 +27,9 @@ namespace Security {
           m_failedChecks(0), m_shouldStop(false), m_obfuscationKey(0), m_xorKey(0) {
         InitializeCriticalSection(&m_csProtection);
         
+        // Reserve capacity for vectors to avoid reallocations
+        m_protectedRegions.reserve(16);
+        
         // Initialize timing
         QueryPerformanceFrequency(&m_frequency);
         QueryPerformanceCounter(&m_lastCheck);
@@ -39,6 +45,10 @@ namespace Security {
     }
     
     bool CProtection::Initialize() {
+        // Apply timing obfuscation during initialization
+        TimingObfuscator::ObfuscateTiming();
+        ControlFlowObfuscator::RandomDelay();
+        
         if (!InitializeMemoryProtection()) {
             return false;
         }
@@ -53,6 +63,9 @@ namespace Security {
         AntiDumpTechniques();
         AntiVMTechniques();
         AntiMonitorTechniques();
+        
+        // Create junk thread for obfuscation
+        ThreadObfuscator::CreateJunkThread();
         
         LogProtectionEvent("Protection system initialized");
         return true;
@@ -80,6 +93,9 @@ namespace Security {
     void CProtection::DebuggerCheckLoop() {
         while (!m_shouldStop && m_protectionEnabled) {
             try {
+                // Apply timing obfuscation before checks
+                TimingObfuscator::RandomSleep();
+                
                 if (IsDebuggerPresent() || IsRemoteDebuggerPresent()) {
                     m_failedChecks++;
                     LogProtectionEvent("Debugger detected!", true);
@@ -95,6 +111,9 @@ namespace Security {
                 VirtualizationCheck();
                 SandboxCheck();
                 ProcessCheck();
+                
+                // Add junk code for obfuscation
+                ControlFlowObfuscator::JunkCode();
                 
                 // Randomize check interval
                 std::random_device rd;
@@ -247,7 +266,10 @@ namespace Security {
             
             if (Process32First(hSnapshot, &pe32)) {
                 do {
-                    std::string processName(pe32.szExeFile);
+                    // Convert WCHAR to char
+                    char processNameA[260];
+                    WideCharToMultiByte(CP_ACP, 0, pe32.szExeFile, -1, processNameA, 260, nullptr, nullptr);
+                    std::string processName(processNameA);
                     std::transform(processName.begin(), processName.end(), processName.begin(), ::tolower);
                     
                     if (processName.find("vboxservice") != std::string::npos ||
@@ -267,7 +289,7 @@ namespace Security {
     
     bool CProtection::IsSandbox() {
         // Check for sandbox-specific artifacts
-        DWORD totalMemory = 0;
+        ULONGLONG totalMemory = 0;
         GetPhysicallyInstalledSystemMemory(&totalMemory);
         
         // Sandboxes often have limited memory
@@ -401,17 +423,12 @@ namespace Security {
         }
         
         // Set trap flag to cause single-step exception
-        __try {
-            __asm {
-                pushfd
-                or dword ptr [esp], 0x100  // Set trap flag
-                popfd
-            }
-        } __except(EXCEPTION_EXECUTE_HANDLER) {
-            // If we get here, debugger is present
-            m_failedChecks++;
-            LogProtectionEvent("Trap flag exception", true);
-        }
+        // Note: Inline assembly not supported on x64, using alternative method
+        CONTEXT ctx;
+        ctx.ContextFlags = CONTEXT_CONTROL;
+        GetThreadContext(GetCurrentThread(), &ctx);
+        ctx.EFlags |= 0x100; // Set trap flag
+        SetThreadContext(GetCurrentThread(), &ctx);
     }
     
     void CProtection::AntiDumpTechniques() {
@@ -621,7 +638,9 @@ namespace Security {
                 
                 if (Process32First(hSnapshot, &pe32)) {
                     do {
-                        if (_stricmp(pe32.szExeFile, process) == 0) {
+                        WCHAR wProcess[260];
+                        MultiByteToWideChar(CP_ACP, 0, process, -1, wProcess, 260);
+                        if (_wcsicmp(pe32.szExeFile, wProcess) == 0) {
                             HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pe32.th32ProcessID);
                             if (hProcess) {
                                 TerminateProcess(hProcess, 0);

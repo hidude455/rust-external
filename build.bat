@@ -4,20 +4,81 @@ echo MIT Method Enhanced Build Script
 echo ========================================
 echo.
 
-REM Check if Visual Studio is installed
-if not exist "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" (
-    if not exist "C:\Program Files (x86)\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" (
-        echo Error: Visual Studio 2022 not found!
-        echo Please install Visual Studio 2022 with C++ development tools.
-        pause
-        exit /b 1
+REM Find Visual Studio installation
+set "MSBUILD_PATH="
+set "VCVARS_PATH="
+
+REM Check VS 2026
+if exist "C:\Program Files\Microsoft Visual Studio\2026\Community\MSBuild\Current\Bin\MSBuild.exe" (
+    set "MSBUILD_PATH=C:\Program Files\Microsoft Visual Studio\2026\Community\MSBuild\Current\Bin\MSBuild.exe"
+    set "VCVARS_PATH=C:\Program Files\Microsoft Visual Studio\2026\Community\VC\Auxiliary\Build\vcvars64.bat"
+)
+if exist "C:\Program Files\Microsoft Visual Studio\2026\Professional\MSBuild\Current\Bin\MSBuild.exe" (
+    set "MSBUILD_PATH=C:\Program Files\Microsoft Visual Studio\2026\Professional\MSBuild\Current\Bin\MSBuild.exe"
+    set "VCVARS_PATH=C:\Program Files\Microsoft Visual Studio\2026\Professional\VC\Auxiliary\Build\vcvars64.bat"
+)
+if exist "C:\Program Files\Microsoft Visual Studio\2026\Enterprise\MSBuild\Current\Bin\MSBuild.exe" (
+    set "MSBUILD_PATH=C:\Program Files\Microsoft Visual Studio\2026\Enterprise\MSBuild\Current\Bin\MSBuild.exe"
+    set "VCVARS_PATH=C:\Program Files\Microsoft Visual Studio\2026\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+)
+
+REM Check VS 2022
+if exist "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" (
+    set "MSBUILD_PATH=C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe"
+    set "VCVARS_PATH=C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
+)
+if exist "C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe" (
+    set "MSBUILD_PATH=C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe"
+    set "VCVARS_PATH=C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Auxiliary\Build\vcvars64.bat"
+)
+if exist "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe" (
+    set "MSBUILD_PATH=C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe"
+    set "VCVARS_PATH=C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+)
+
+REM Check VS 2019
+if "%MSBUILD_PATH%"=="" (
+    if exist "C:\Program Files\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\MSBuild.exe" (
+        set "MSBUILD_PATH=C:\Program Files\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\MSBuild.exe"
+        set "VCVARS_PATH=C:\Program Files\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
+    )
+)
+if "%MSBUILD_PATH%"=="" (
+    if exist "C:\Program Files\Microsoft Visual Studio\2019\Professional\MSBuild\Current\Bin\MSBuild.exe" (
+        set "MSBUILD_PATH=C:\Program Files\Microsoft Visual Studio\2019\Professional\MSBuild\Current\Bin\MSBuild.exe"
+        set "VCVARS_PATH=C:\Program Files\Microsoft Visual Studio\2019\Professional\VC\Auxiliary\Build\vcvars64.bat"
+    )
+)
+if "%MSBUILD_PATH%"=="" (
+    if exist "C:\Program Files\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe" (
+        set "MSBUILD_PATH=C:\Program Files\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe"
+        set "VCVARS_PATH=C:\Program Files\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
     )
 )
 
+REM Check VS 2017
+if "%MSBUILD_PATH%"=="" (
+    if exist "C:\Program Files\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe" (
+        set "MSBUILD_PATH=C:\Program Files\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe"
+        set "VCVARS_PATH=C:\Program Files\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
+    )
+)
+
+if "%MSBUILD_PATH%"=="" (
+    echo Error: Visual Studio not found!
+    echo Please install Visual Studio 2017/2019/2022 with C++ development tools.
+    pause
+    exit /b 1
+)
+
+echo [*] Found Visual Studio at: %MSBUILD_PATH%
+echo.
+
 REM Set up Visual Studio environment
-call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat" 2>nul
-if errorlevel 1 (
-    call "C:\Program Files (x86)\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat" 2>nul
+if exist "%VCVARS_PATH%" (
+    call "%VCVARS_PATH%" 2>nul
+) else (
+    echo Warning: vcvars64.bat not found, attempting to build without it...
 )
 
 echo Cleaning previous build...
@@ -26,7 +87,7 @@ if exist "obj" rmdir /s /q "obj"
 
 echo.
 echo Building Release configuration...
-MSBuild.exe "SourcePath\EnhancedProject.vcxproj" /p:Configuration=Release /p:Platform=x64 /m /v:minimal
+"%MSBUILD_PATH%" "SourcePath\EnhancedProject.vcxproj" /p:Configuration=Release /p:Platform=x64 /m /v:minimal
 
 if errorlevel 1 (
     echo.
@@ -51,7 +112,7 @@ if exist "bin\x64\Release\MITMethod_Enhanced.exe" (
     echo 1. Run the target game first (Rust)
     echo 2. Launch MITMethod_Enhanced.exe
     echo 3. Use INSERT key to toggle menu
-    echo 4. Use F1-F4 for quick toggles
+    echo 4. Navigate to "Spoofer" tab for HWID spoofing
     echo 5. Use END key for emergency exit
     echo.
     echo Protection and stealth features are enabled by default.

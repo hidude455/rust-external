@@ -18,6 +18,9 @@
 #include <windows.h>
 #include <iostream>
 #include <memory>
+#include <algorithm>
+
+using namespace GameEnhance;
 
 // Global application state
 namespace {

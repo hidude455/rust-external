@@ -1,6 +1,7 @@
 #include "SecurityLayer.h"
-#include <intrin.h>
 #include <tlhelp32.h>
+#include <psapi.h>
+#include <algorithm>
 #include <chrono>
 
 typedef NTSTATUS(NTAPI* pNtQueryInformationProcess)(HANDLE, ULONG, PVOID, ULONG, PULONG);
@@ -47,10 +48,8 @@ namespace Security {
             }
         }
 
-        __try {
-            __debugbreak();
-            return true;
-        } __except(EXCEPTION_EXECUTE_HANDLER) {}
+        // Check for debugger using debugbreak
+        __debugbreak();
 
         DWORD64 tickCount = GetTickCount64();
         Sleep(100);

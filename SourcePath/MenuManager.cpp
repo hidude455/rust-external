@@ -1,6 +1,9 @@
 #include "MenuManager.h"
+#include <algorithm>
+#include <sstream>
+#include <cstring>
 
-CMenuManager::CMenuManager(CFeatureManager* features) : m_features(features) {}
+CMenuManager::CMenuManager(CFeatureManager* features) : m_features(features), m_spoofer(nullptr), m_spooferGUI(nullptr), m_rustEvasion(nullptr) {}
 
 CMenuManager::~CMenuManager() {
     Shutdown();
@@ -41,9 +44,9 @@ void CMenuManager::Render() {
     ImGui::SetNextWindowSize(ImVec2(600, 500), ImGuiCond_FirstUseEver);
     if (ImGui::Begin("Rust External Premium", &m_open, ImGuiWindowFlags_AlwaysAutoResize)) {
         static int currentTab = 0;
-        const char* tabs[] = { "Aimbot", "Player Visuals", "World Exploits", "Weapon Mods", "World Visuals", "Movement", "Settings" };
+        const char* tabs[] = { "Aimbot", "Player Visuals", "World Exploits", "Weapon Mods", "World Visuals", "Movement", "Spoofer", "Settings" };
         if (ImGui::BeginTabBar("MainTabBar", ImGuiTabBarFlags_None)) {
-            for (int i = 0; i < 7; i++) {
+            for (int i = 0; i < 8; i++) {
                 if (ImGui::BeginTabItem(tabs[i])) {
                     currentTab = i;
                     ImGui::EndTabItem();
@@ -61,7 +64,8 @@ void CMenuManager::Render() {
             case 3: RenderWeaponModsTab(); break;
             case 4: RenderWorldVisualsTab(); break;
             case 5: RenderMovementTab(); break;
-            case 6: RenderSettingsTab(); break;
+            case 6: RenderSpooferTab(); break;
+            case 7: RenderSettingsTab(); break;
         }
     }
     ImGui::End();
@@ -229,7 +233,7 @@ void CMenuManager::RenderKeybindPicker(const char* label, Keybind& keybind) {
     ImGui::Text("%s", label);
     ImGui::SameLine();
     char keyName[32];
-    sprintf_s(keyName, "Key: %d (Mode: %s)", keybind.key, keybind.mode == KeybindMode::Hold ? "Hold" : "Toggle");
+    sprintf_s(keyName, sizeof(keyName), "Key: %d (Mode: %s)", keybind.key, keybind.mode == KeybindMode::Hold ? "Hold" : "Toggle");
     if (ImGui::Button(keyName)) {
         ImGui::OpenPopup("KeybindPopup");
     }
@@ -255,5 +259,178 @@ void CMenuManager::RenderKeybindPicker(const char* label, Keybind& keybind) {
     } else {
         static bool waitingForKey = true;
         waitingForKey = true;
+    }
+}
+
+void CMenuManager::SetSpoofer(Spoofer::CAdvancedSpoofer* spoofer) {
+    m_spoofer = spoofer;
+}
+
+void CMenuManager::SetSpooferGUI(SpooferGUI::CSpooferGUI* spooferGUI) {
+    m_spooferGUI = spooferGUI;
+}
+
+void CMenuManager::SetRustEvasion(RustEvasion::CRustAntiCheatEvasion* rustEvasion) {
+    m_rustEvasion = rustEvasion;
+}
+
+void CMenuManager::RenderSpooferTab() {
+    ImGui::Text("HWID Spoofer - Rust Edition");
+    ImGui::Separator();
+    
+    if (!m_spoofer || !m_spooferGUI) {
+        ImGui::TextColored(ImVec4(1.0f, 0.2f, 0.2f, 1.0f), "Spoofer not initialized");
+        return;
+    }
+    
+    // Quick Actions
+    ImGui::Text("Quick Actions:");
+    if (ImGui::Button("🚀 Spoof All")) {
+        if (m_spoofer) m_spoofer->SpoofAll();
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("🔄 Restore All")) {
+        if (m_spoofer) m_spoofer->RestoreAll();
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("🦀 Rust Mode")) {
+        if (m_spoofer) m_spoofer->SpoofForRust();
+    }
+    
+    ImGui::Separator();
+    
+    // Status
+    Spoofer::SpoofStatus status = m_spoofer->GetStatus();
+    const char* statusText = "Unknown";
+    ImVec4 statusColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+    
+    switch (status) {
+        case Spoofer::SpoofStatus::NotSpoofed:
+            statusText = "Not Spoofed";
+            statusColor = ImVec4(0.7f, 0.7f, 0.7f, 1.0f);
+            break;
+        case Spoofer::SpoofStatus::Spoofing:
+            statusText = "Spoofing...";
+            statusColor = ImVec4(0.0f, 0.7f, 1.0f, 1.0f);
+            break;
+        case Spoofer::SpoofStatus::Spoofed:
+            statusText = "Spoofed";
+            statusColor = ImVec4(0.0f, 1.0f, 0.5f, 1.0f);
+            break;
+        case Spoofer::SpoofStatus::Failed:
+            statusText = "Failed";
+            statusColor = ImVec4(1.0f, 0.2f, 0.2f, 1.0f);
+            break;
+        case Spoofer::SpoofStatus::Restored:
+            statusText = "Restored";
+            statusColor = ImVec4(1.0f, 0.8f, 0.0f, 1.0f);
+            break;
+    }
+    
+    ImGui::TextColored(statusColor, "Status: %s", statusText);
+    
+    ImGui::Separator();
+    
+    // Hardware Identifiers
+    ImGui::Text("Hardware Identifiers:");
+    Spoofer::SpooferConfig config = m_spoofer->GetConfig();
+    
+    ImGui::Checkbox("Motherboard Serial", &config.spoofMotherboard);
+    ImGui::Checkbox("BIOS Serial", &config.spoofBIOS);
+    ImGui::Checkbox("CPU ID", &config.spoofCPU);
+    ImGui::Checkbox("Disk Serial", &config.spoofDisk);
+    ImGui::Checkbox("GPU Serial", &config.spoofGPU);
+    ImGui::Checkbox("MAC Address", &config.spoofMAC);
+    ImGui::Checkbox("System GUID", &config.spoofSystemGUID);
+    ImGui::Checkbox("Machine GUID", &config.spoofMachineGUID);
+    ImGui::Checkbox("Product ID", &config.spoofProductID);
+    
+    m_spoofer->SetConfig(config);
+    
+    ImGui::Separator();
+    
+    // Rust EAC Evasion
+    if (m_rustEvasion) {
+        ImGui::Text("Rust EAC Evasion:");
+        RustEvasion::RustEvasionConfig evasionConfig = m_rustEvasion->GetConfig();
+        
+        ImGui::Checkbox("Bypass EAC Kernel", &evasionConfig.bypassEACKernel);
+        ImGui::Checkbox("Bypass EAC User Mode", &evasionConfig.bypassEACUserMode);
+        ImGui::Checkbox("Hide from EAC Scanner", &evasionConfig.hideFromEACScanner);
+        ImGui::Checkbox("Spoof EAC Identifiers", &evasionConfig.spoofEACIdentifiers);
+        ImGui::Checkbox("Bypass EAC Integrity", &evasionConfig.bypassEACIntegrity);
+        ImGui::Checkbox("Bypass EAC Timing", &evasionConfig.bypassEACTiming);
+        ImGui::Checkbox("Bypass EAC Network", &evasionConfig.bypassEACNetwork);
+        ImGui::Checkbox("Bypass EAC Behavior", &evasionConfig.bypassEACBehavior);
+        
+        ImGui::Separator();
+        ImGui::Text("Evasion Mode:");
+        
+        if (ImGui::Button("Stealth Mode")) {
+            m_rustEvasion->EnableStealthMode();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Aggressive Mode")) {
+            m_rustEvasion->EnableAggressiveMode();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Paranoid Mode")) {
+            m_rustEvasion->EnableParanoidMode();
+        }
+        
+        m_rustEvasion->SetConfig(evasionConfig);
+        
+        ImGui::Separator();
+        
+        // EAC Status
+        RustEvasion::EACBypassStatus eacStatus = m_rustEvasion->GetStatus();
+        const char* eacStatusText = "Unknown";
+        ImVec4 eacStatusColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+        
+        switch (eacStatus) {
+            case RustEvasion::EACBypassStatus::NotActive:
+                eacStatusText = "Not Active";
+                eacStatusColor = ImVec4(0.7f, 0.7f, 0.7f, 1.0f);
+                break;
+            case RustEvasion::EACBypassStatus::Initializing:
+                eacStatusText = "Initializing...";
+                eacStatusColor = ImVec4(0.0f, 0.7f, 1.0f, 1.0f);
+                break;
+            case RustEvasion::EACBypassStatus::Active:
+                eacStatusText = "Active";
+                eacStatusColor = ImVec4(0.0f, 1.0f, 0.5f, 1.0f);
+                break;
+            case RustEvasion::EACBypassStatus::Partial:
+                eacStatusText = "Partial";
+                eacStatusColor = ImVec4(1.0f, 0.8f, 0.0f, 1.0f);
+                break;
+            case RustEvasion::EACBypassStatus::Failed:
+                eacStatusText = "Failed";
+                eacStatusColor = ImVec4(1.0f, 0.2f, 0.2f, 1.0f);
+                break;
+            case RustEvasion::EACBypassStatus::Detected:
+                eacStatusText = "Detected";
+                eacStatusColor = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
+                break;
+        }
+        
+        ImGui::TextColored(eacStatusColor, "EAC Bypass Status: %s", eacStatusText);
+        
+        ImGui::Separator();
+        
+        if (ImGui::Button("Activate EAC Bypass")) {
+            if (m_rustEvasion) m_rustEvasion->ActivateBypass();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Deactivate EAC Bypass")) {
+            if (m_rustEvasion) m_rustEvasion->DeactivateBypass();
+        }
+    }
+    
+    ImGui::Separator();
+    
+    // Open standalone spoofer GUI
+    if (ImGui::Button("Open Spoofer GUI")) {
+        if (m_spooferGUI) m_spooferGUI->ToggleWindow();
     }
 }

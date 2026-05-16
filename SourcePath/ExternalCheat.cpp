@@ -1,5 +1,6 @@
 #include "ExternalCheat.h"
 #include <iostream>
+#include <memory>
 
 namespace App {
 
@@ -78,8 +79,22 @@ namespace App {
         }
         m_overlay->SetMenuManager(m_menuManager.get());
 
+        // Initialize spoofer system
+        if (!InitializeSpoofer()) {
+            std::cout << "[!] Failed to initialize spoofer\n";
+            return false;
+        }
+
+        // Connect spoofer to menu manager
+        if (m_spoofer && m_spooferGUI && m_menuManager) {
+            m_menuManager->SetSpoofer(m_spoofer.get());
+            m_menuManager->SetSpooferGUI(m_spooferGUI.get());
+            m_menuManager->SetRustEvasion(m_rustEvasion.get());
+        }
+
         std::cout << "[+] Overlay created\n";
         std::cout << "[+] Menu initialized (INSERT to toggle)\n";
+        std::cout << "[+] Spoofer initialized (F6 to toggle)\n";
         std::cout << "[+] Rust External ready!\n\n";
 
         m_running = true;
@@ -96,6 +111,11 @@ namespace App {
         }
 
         SaveConfiguration();
+
+        // Shutdown spoofer components first (they depend on nothing)
+        if (m_spooferGUI) m_spooferGUI->Shutdown();
+        if (m_rustEvasion) m_rustEvasion->Shutdown();
+        if (m_spoofer) m_spoofer->Shutdown();
 
         if (m_menuManager) m_menuManager->Shutdown();
         if (m_overlay) m_overlay->Shutdown();
@@ -126,6 +146,70 @@ namespace App {
         if (m_features && m_memory && m_memory->IsAttached()) {
             m_features->Render(ctx, width, height);
         }
+        
+        // Render spoofer GUI
+        if (m_spooferGUI) {
+            m_spooferGUI->Render();
+        }
+    }
+
+    bool CExternalCheat::InitializeSpoofer() {
+        // Initialize advanced spoofer
+        m_spoofer = std::make_unique<Spoofer::CAdvancedSpoofer>();
+        
+        Spoofer::SpooferConfig spoofConfig;
+        spoofConfig.randomizeAll = true;
+        spoofConfig.enableWMIProtection = true;
+        spoofConfig.enableRegistryProtection = true;
+        spoofConfig.enableDriverProtection = true;
+        spoofConfig.enableNetworkProtection = true;
+        spoofConfig.enablePCISpoofing = true;
+        spoofConfig.createBackup = true;
+        spoofConfig.restoreOnExit = false;
+        
+        if (!m_spoofer->Initialize(spoofConfig)) {
+            std::cout << "[!] Failed to initialize advanced spoofer\n";
+            return false;
+        }
+        std::cout << "[+] Advanced spoofer initialized\n";
+        
+        // Initialize Rust-specific EAC evasion
+        m_rustEvasion = std::make_unique<RustEvasion::CRustAntiCheatEvasion>();
+        
+        RustEvasion::RustEvasionConfig evasionConfig;
+        evasionConfig.bypassEACKernel = true;
+        evasionConfig.bypassEACUserMode = true;
+        evasionConfig.hideFromEACScanner = true;
+        evasionConfig.spoofEACIdentifiers = true;
+        evasionConfig.bypassEACIntegrity = true;
+        evasionConfig.bypassEACTiming = true;
+        evasionConfig.bypassEACNetwork = true;
+        evasionConfig.bypassEACBehavior = true;
+        evasionConfig.enableKernelDriver = true;
+        evasionConfig.enableUserModeHooking = true;
+        evasionConfig.enableMemoryObfuscation = true;
+        evasionConfig.enableProcessHiding = true;
+        evasionConfig.enableThreadHiding = true;
+        evasionConfig.enableModuleHiding = true;
+        evasionConfig.stealthMode = true;
+        evasionConfig.aggressiveMode = false;
+        evasionConfig.paranoidMode = false;
+        
+        if (!m_rustEvasion->Initialize(evasionConfig)) {
+            std::cout << "[!] Failed to initialize Rust EAC evasion\n";
+            return false;
+        }
+        std::cout << "[+] Rust EAC evasion initialized\n";
+        
+        // Initialize spoofer GUI
+        m_spooferGUI = std::make_unique<SpooferGUI::CSpooferGUI>(m_spoofer.get());
+        if (!m_spooferGUI->Initialize()) {
+            std::cout << "[!] Failed to initialize spoofer GUI\n";
+            return false;
+        }
+        std::cout << "[+] Spoofer GUI initialized\n";
+        
+        return true;
     }
 
     void CExternalCheat::LoadConfiguration() {
