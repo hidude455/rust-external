@@ -26,6 +26,10 @@ public:
     void SetRustEvasion(RustEvasion::CRustAntiCheatEvasion* rustEvasion);
 
 private:
+    void ApplyTheme();
+    void RenderOverviewSection();
+    void RenderVisualSections();
+    void RenderWorldSection();
     void RenderAimbotTab();
     void RenderPlayerVisualsTab();
     void RenderWorldExploitsTab();
@@ -45,4 +49,5 @@ private:
     HWND m_hwnd = nullptr;
     ID3D11Device* m_device = nullptr;
     ID3D11DeviceContext* m_ctx = nullptr;
+    int m_activeSection = 0;
 };

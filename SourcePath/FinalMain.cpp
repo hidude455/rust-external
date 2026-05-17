@@ -387,98 +387,12 @@ void MainApplicationLoop() {
 }
 
 void HandleSystemInput() {
-    // Toggle menu with INSERT key
-    if (GetAsyncKeyState(VK_INSERT) & 1) {
+    // Toggle menu with Right Shift key
+    if (GetAsyncKeyState(VK_RSHIFT) & 1) {
         if (g_userInterface) {
             g_userInterface->ToggleMenu();
             LogSystemEvent("Menu toggled");
         }
-    }
-    
-    // Quick toggle functions
-    if (GetAsyncKeyState(VK_F1) & 1) {
-        if (g_rustFeatures) {
-            g_rustFeatures->EnableESP(!g_rustFeatures->IsESPEnabled());
-            LogSystemEvent("ESP toggled");
-        }
-    }
-    
-    if (GetAsyncKeyState(VK_F2) & 1) {
-        if (g_rustFeatures) {
-            g_rustFeatures->EnableAimbot(!g_rustFeatures->IsAimbotEnabled());
-            LogSystemEvent("Aimbot toggled");
-        }
-    }
-    
-    if (GetAsyncKeyState(VK_F3) & 1) {
-        if (g_rustFeatures) {
-            g_rustFeatures->EnableResourceGathering(!g_rustFeatures->IsResourceGatheringEnabled());
-            LogSystemEvent("Resource gathering toggled");
-        }
-    }
-    
-    if (GetAsyncKeyState(VK_F4) & 1) {
-        if (g_rustFeatures) {
-            g_rustFeatures->EnableCombatAssistance(!g_rustFeatures->IsCombatAssistanceEnabled());
-            LogSystemEvent("Combat assistance toggled");
-        }
-    }
-    
-    // Advanced control keys
-    if (GetAsyncKeyState(VK_F5) & 1) {
-        EnableParanoidMode();
-        LogSystemEvent("Paranoid mode toggled");
-    }
-    
-    if (GetAsyncKeyState(VK_F6) & 1) {
-        DisableParanoidMode();
-        LogSystemEvent("Paranoid mode disabled");
-    }
-    
-    if (GetAsyncKeyState(VK_F7) & 1) {
-        EnableEmergencyMode();
-        LogSystemEvent("Emergency mode activated", true);
-    }
-    
-    if (GetAsyncKeyState(VK_F8) & 1) {
-        PerformSelfDestruct();
-        LogSystemEvent("Self destruct activated", true);
-    }
-    
-    if (GetAsyncKeyState(VK_F9) & 1) {
-        OptimizeForPerformance();
-        LogSystemEvent("Performance optimization enabled");
-    }
-    
-    if (GetAsyncKeyState(VK_F10) & 1) {
-        OptimizeForStealth();
-        LogSystemEvent("Stealth optimization enabled");
-    }
-    
-    if (GetAsyncKeyState(VK_F11) & 1) {
-        OptimizeForBalance();
-        LogSystemEvent("Balanced optimization enabled");
-    }
-    
-    if (GetAsyncKeyState(VK_F12) & 1) {
-        if (g_rustAntiCheat) {
-            g_rustAntiCheat->EnableEvasion(!g_rustAntiCheat->IsEvasionEnabled());
-            LogSystemEvent("Evasion toggled");
-        }
-    }
-    
-    // Emergency exit with END key
-    if (GetAsyncKeyState(VK_END) & 1) {
-        g_systemRunning = false;
-        LogSystemEvent("Emergency exit triggered");
-    }
-    
-    // Ctrl+Shift+X for configuration save
-    if ((GetAsyncKeyState(VK_CONTROL) & 0x8000) && 
-        (GetAsyncKeyState(VK_SHIFT) & 0x8000) && 
-        (GetAsyncKeyState(0x58) & 1)) { // X key
-        SaveConfiguration();
-        LogSystemEvent("Configuration saved");
     }
 }
 
@@ -1123,9 +1037,10 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
     
     switch (uMsg) {
         case WM_KEYDOWN:
-            if (wParam == VK_INSERT) {
+            if (wParam == VK_RSHIFT) {
                 if (g_userInterface) {
                     g_userInterface->ToggleMenu();
+                    LogSystemEvent("Menu toggled");
                 }
                 return 0;
             }

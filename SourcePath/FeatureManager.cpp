@@ -1,6 +1,40 @@
 #include "FeatureManager.h"
 #include <cmath>
 #include <algorithm>
+#include <fstream>
+#include <sstream>
+#include <iomanip>
+#include <cctype>
+
+namespace {
+    std::string TrimCopy(const std::string& s) {
+        size_t start = 0;
+        while (start < s.size() && std::isspace(static_cast<unsigned char>(s[start]))) ++start;
+        size_t end = s.size();
+        while (end > start && std::isspace(static_cast<unsigned char>(s[end - 1]))) --end;
+        return s.substr(start, end - start);
+    }
+
+    std::string ColorToString(uint32_t color) {
+        std::ostringstream oss;
+        oss << "0x" << std::uppercase << std::hex << std::setw(8) << std::setfill('0') << color;
+        return oss.str();
+    }
+
+    bool ParseColor(const std::string& token, uint32_t& out) {
+        std::string trimmed = TrimCopy(token);
+        if (trimmed.size() > 2 && (trimmed[0] == '0' && (trimmed[1] == 'x' || trimmed[1] == 'X'))) {
+            trimmed = trimmed.substr(2);
+        }
+        if (trimmed.empty()) return false;
+        try {
+            out = static_cast<uint32_t>(std::stoul(trimmed, nullptr, 16));
+            return true;
+        } catch (...) {
+            return false;
+        }
+    }
+}
 
 namespace Features {
 
@@ -203,7 +237,20 @@ namespace Features {
         if(!m_memory->WorldToScreen(e.position,sp,w,h))return;
         if(!m_memory->WorldToScreen(hp,sh,w,h))return;
         float bh=sp.y-sh.y, bw=bh*0.4f, x=sh.x-bw/2, y=sh.y;
-        uint32_t col=GetEntityColor(e);
+        bool isTarget = m_currentTarget && e.address==m_currentTarget->address;
+        uint32_t col = GetEntityColor(e);
+        if(m_visualsCfg.customESPColor){
+            col = m_visualsCfg.customESPColorValue;
+        }
+        if(m_visualsCfg.highlightESP && isTarget){
+            col = m_visualsCfg.highlightESPColor;
+        }
+        if(isTarget && m_visualsCfg.highlightESP){
+            float hx=x-6.0f, hy=y-6.0f, hw=bw+12.0f, hh=bh+12.0f;
+            uint32_t fillColor=(m_visualsCfg.highlightESPColor&0x00FFFFFF)|0x20000000;
+            DrawFilledRect(ctx,hx,hy,hw,hh,fillColor);
+            DrawBox(ctx,hx,hy,hw,hh,m_visualsCfg.highlightESPColor,2.0f);
+        }
         if(m_visualsCfg.chams)RenderChams(ctx,e,w,h);
         switch(m_visualsCfg.boxStyle){
         case ESPBoxStyle::Box2D:DrawBox(ctx,x,y,bw,bh,col,m_visualsCfg.boxThickness);break;
@@ -211,22 +258,28 @@ namespace Features {
         case ESPBoxStyle::Filled:{uint32_t fc=(col&0x00FFFFFF)|0x40000000;DrawFilledRect(ctx,x,y,bw,bh,fc);DrawCornerBox(ctx,x,y,bw,bh,col,m_visualsCfg.boxThickness,bh*m_visualsCfg.cornerLength);break;}
         }
         if(m_visualsCfg.skeletons)RenderSkeleton(ctx,e,w,h);
+        if(m_visualsCfg.targetBoneESP && isTarget){
+            uint32_t prevColor=m_visualsCfg.skeletonColor;
+            float prevThickness=m_visualsCfg.skeletonThickness;
+            uint32_t targetColor=m_visualsCfg.highlightESP?m_visualsCfg.highlightESPColor:prevColor;
+            float targetThickness=std::max(prevThickness,2.5f);
+            m_visualsCfg.skeletonColor=targetColor;
+            m_visualsCfg.skeletonThickness=targetThickness;
+            RenderSkeleton(ctx,e,w,h);
+            m_visualsCfg.skeletonColor=prevColor;
+            m_visualsCfg.skeletonThickness=prevThickness;
+        }
         if(m_visualsCfg.viewDirectionArrow)RenderViewArrow(ctx,e,w,h);
         if(m_visualsCfg.offscreenArrows)RenderOffscreenArrow(ctx,e,w,h);
-        if(m_visualsCfg.healthbars){
-            float bx=x-m_visualsCfg.healthbarWidth-3, hpct=e.maxHealth>0?e.health/e.maxHealth:0;
-            uint32_t hc=m_visualsCfg.colorCodedHealth?GetHealthColor(e.health,e.maxHealth):0xFF30FF30;
-            DrawFilledRect(ctx,bx-1,y-1,m_visualsCfg.healthbarWidth+2,bh+2,0xFF000000);
-            DrawFilledRect(ctx,bx,y+bh*(1-hpct),m_visualsCfg.healthbarWidth,bh*hpct,hc);
-        }
         float iy=y-2;
         if(m_visualsCfg.username&&!e.name.empty()){DrawText(ctx,e.name,sp.x,iy,m_visualsCfg.usernameColor,true,1.0f);iy-=14;}
         if(m_visualsCfg.distance){char b[32];sprintf_s(b,"%.0fm",e.distance);DrawText(ctx,b,sp.x,iy,m_visualsCfg.distanceColor,true,1.0f);iy-=14;}
         if(m_visualsCfg.heldItem&&!e.heldItemName.empty()){DrawText(ctx,e.heldItemName,sp.x,iy,m_visualsCfg.heldItemColor,true,1.0f);iy-=14;}
         if(m_visualsCfg.insideBuilding&&e.isInsideBuilding){DrawText(ctx,"INDOORS",sp.x,iy,m_visualsCfg.insideBuildingColor,true,1.0f);}
-        if(m_visualsCfg.showSnaplines)DrawLine(ctx,(float)w/2,(float)h,sp.x,y+bh,m_visualsCfg.snaplineColor,1.0f);
+        if(m_visualsCfg.tracers && isTarget)DrawLine(ctx,(float)w/2,(float)h,sp.x,y+bh,m_visualsCfg.tracerLineColor,1.8f);
         if(m_visualsCfg.showHeadDot)DrawCircle(ctx,sh.x,sh.y,m_visualsCfg.headDotSize,m_visualsCfg.headDotColor,1.0f,true);
         if(m_visualsCfg.hotbar)RenderHotbar(ctx,e,w,h);
+        if(m_visualsCfg.inventoryOverlay && m_currentTarget && e.address==m_currentTarget->address)RenderInventoryOverlay(ctx,e,w,h);
         if(m_visualsCfg.steamAvatar)RenderAvatar(ctx,e,w,h);
     }
 
@@ -234,6 +287,10 @@ namespace Features {
         int bp[][2]={{0,1},{1,2},{2,3},{3,4},{4,5},{0,6},{6,7},{7,8},{8,9},{0,10},{10,11},{11,12},{12,13},{13,14},{14,15},{12,16},{16,17},{17,18},{12,19},{19,20},{20,21}};
         int nb=m_visualsCfg.fullBodySkeleton?22:16;
         for(int i=0;i<nb;i++){Memory::Vector2 s1,s2;if(m_memory->WorldToScreen(e.bonePositions[bp[i][0]],s1,w,h)&&m_memory->WorldToScreen(e.bonePositions[bp[i][1]],s2,w,h))DrawLine(ctx,s1.x,s1.y,s2.x,s2.y,m_visualsCfg.skeletonColor,m_visualsCfg.skeletonThickness);}
+    }
+    void CFeatureManager::RenderChams(ID3D11DeviceContext* ctx, const Memory::GameEntity& e, int w, int h) {
+        Memory::Vector2 sp; if(!m_memory->WorldToScreen(e.position,sp,w,h))return;
+        DrawCircle(ctx,sp.x,sp.y,30.0f,m_visualsCfg.chamColor,2.0f,true);
     }
     void CFeatureManager::RenderViewArrow(ID3D11DeviceContext* ctx, const Memory::GameEntity& e, int w, int h) {
         Memory::Vector2 sp; if(!m_memory->WorldToScreen(e.position,sp,w,h))return;
@@ -247,14 +304,41 @@ namespace Features {
         ax=std::max(m,std::min((float)w-m,ax)); ay=std::max(m,std::min((float)h-m,ay));
         float s=m_visualsCfg.offscreenSize; DrawTriangle(ctx,ax-s,ay-s,ax+s,ay-s,ax,ay+s,m_visualsCfg.offscreenColor,true);
     }
-    void CFeatureManager::RenderChams(ID3D11DeviceContext* ctx, const Memory::GameEntity& e, int w, int h) {
-        Memory::Vector2 sp; if(!m_memory->WorldToScreen(e.position,sp,w,h))return;
-        DrawCircle(ctx,sp.x,sp.y,30.0f,m_visualsCfg.chamColor,2.0f,true);
-    }
     void CFeatureManager::RenderHotbar(ID3D11DeviceContext* ctx, const Memory::GameEntity& e, int w, int h) {
         Memory::Vector2 sp; if(!m_memory->WorldToScreen(e.position,sp,w,h))return;
         float sx=sp.x-(e.hotbarItems.size()*12.0f)/2, sy=sp.y+20;
-        for(size_t i=0;i<e.hotbarItems.size();i++){DrawFilledRect(ctx,sx+i*12,sy,10,10,0x80000000);DrawBox(ctx,sx+i*12,sy,10,10,0xFFFFFFFF,1.0f);}
+        for(size_t i=0;i<e.hotbarItems.size();i++){
+            DrawFilledRect(ctx,sx+i*12,sy,10,10,0x80000000);
+            DrawBox(ctx,sx+i*12,sy,10,10,0xFFFFFFFF,1.0f);
+        }
+    }
+    void CFeatureManager::RenderInventoryOverlay(ID3D11DeviceContext* ctx, const Memory::GameEntity& e, int w, int h) {
+        if(e.hotbarItems.empty() && e.attachments.empty()) return;
+        Memory::Vector2 sp; if(!m_memory->WorldToScreen(e.position,sp,w,h))return;
+        float baseX = sp.x;
+        float baseY = sp.y - 120.0f;
+        DrawFilledRect(ctx,baseX-90,baseY-28,180,24,0xA0000000);
+        DrawBox(ctx,baseX-90,baseY-28,180,24,0xFF30FF30,1.0f);
+        DrawText(ctx,"Inventory",baseX,baseY-20,0xFFFFFFFF,true,1.0f);
+
+        float itemY = baseY - 2;
+        if(!e.hotbarItems.empty()){
+            DrawText(ctx,"Hotbar",baseX-80,itemY,0xFFB0FFD0,false,0.9f);
+            itemY += 14;
+            for(const auto& item : e.hotbarItems){
+                DrawText(ctx,item,baseX-70,itemY,0xFFFFFFFF,false,0.9f);
+                itemY += 14;
+            }
+        }
+        if(!e.attachments.empty()){
+            itemY += 6;
+            DrawText(ctx,"Attachments",baseX-80,itemY,0xFFD0FFB0,false,0.9f);
+            itemY += 14;
+            for(const auto& att : e.attachments){
+                DrawText(ctx,att,baseX-70,itemY,0xFFFFFFFF,false,0.9f);
+                itemY += 14;
+            }
+        }
     }
     void CFeatureManager::RenderAvatar(ID3D11DeviceContext* ctx, const Memory::GameEntity& e, int w, int h) {
         Memory::Vector2 sp; if(!m_memory->WorldToScreen(e.position,sp,w,h))return;
@@ -267,38 +351,14 @@ namespace Features {
         if(!e.name.empty())DrawText(ctx,e.name,sp.x,sp.y-16,c.color,true,1.0f);
         char b[32];sprintf_s(b,"%.0fm",e.distance);DrawText(ctx,b,sp.x,sp.y+4,c.color,true,1.0f);
     }
-    void CFeatureManager::RenderItemESP(ID3D11DeviceContext* ctx) {
-        if(!m_worldVisualsCfg.allItemsToggleable)return; 
-        for(const auto&e:m_memory->GetEntities()){
-            if(e.type==Memory::EntityType::Ore||e.type==Memory::EntityType::Collectible||e.type==Memory::EntityType::CargoShip||e.type==Memory::EntityType::OilRig||e.type==Memory::EntityType::LockedCrate||e.type==Memory::EntityType::ToolCupboard){float sx,sy;if(m_memory->WorldToScreen(e.position,sx,sy)){
-                uint32_t c=0x00FFFFFF;
-                if(e.type==Memory::EntityType::Ore)c=0xFFFF00FF;
-                else if(e.type==Memory::EntityType::CargoShip)c=0xFF00FF00;
-                else if(e.type==Memory::EntityType::OilRig)c=0xFF0000FF;
-                else if(e.type==Memory::EntityType::LockedCrate)c=0xFFFF0000;
-                else if(e.type==Memory::EntityType::ToolCupboard)c=0xFFFFFF00;
-                DrawText(ctx,e.name.c_str(),sx,sy-15,c,false,1.0f);DrawBox(ctx,sx-10,sy-10,20,20,c,1.0f);}}
-        }
-    }
-    void CFeatureManager::RenderFOVCircle(ID3D11DeviceContext* ctx, int w, int h) {
-        DrawCircle(ctx,(float)w/2,(float)h/2,m_aimbotCfg.fov*10.0f,m_aimbotCfg.fovCircleColor,1.5f,false);
-    }
-    void CFeatureManager::RenderTargetLine(ID3D11DeviceContext* ctx, int w, int h) {
+    void CFeatureManager::RenderHighlight(ID3D11DeviceContext* ctx, int w, int h) {
         if(!m_currentTarget)return; Memory::Vector2 sp;
-        if(m_memory->WorldToScreen(m_currentTarget->position,sp,w,h))DrawLine(ctx,(float)w/2,(float)h/2,sp.x,sp.y,m_aimbotCfg.targetLineColor,1.5f);
-    }
-    void CFeatureManager::RenderPrediction(ID3D11DeviceContext* ctx, int w, int h) {
-        if(!m_currentTarget)return; Memory::Vector3 p=PredictPosition(*m_currentTarget,m_aimbotCfg.predictionTime);
-        Memory::Vector2 sp; if(m_memory->WorldToScreen(p,sp,w,h))DrawCircle(ctx,sp.x,sp.y,6.0f,m_aimbotCfg.predictionColor,1.5f,true);
+        if(m_memory->WorldToScreen(m_currentTarget->position,sp,w,h))DrawCircle(ctx,sp.x,sp.y,25.0f,m_aimbotCfg.highlightColor,3.0f,false);
     }
     void CFeatureManager::RenderTracers(ID3D11DeviceContext* ctx, int w, int h) {
         auto now=std::chrono::steady_clock::now();
         m_tracers.erase(std::remove_if(m_tracers.begin(),m_tracers.end(),[&](auto&t){return std::chrono::duration<float>(now-t.second).count()>m_aimbotCfg.tracerDuration;}),m_tracers.end());
         for(auto&[p,_]:m_tracers)DrawCircle(ctx,p.x,p.y,3.0f,m_aimbotCfg.tracerColor,1.0f,true);
-    }
-    void CFeatureManager::RenderHighlight(ID3D11DeviceContext* ctx, int w, int h) {
-        if(!m_currentTarget)return; Memory::Vector2 sp;
-        if(m_memory->WorldToScreen(m_currentTarget->position,sp,w,h))DrawCircle(ctx,sp.x,sp.y,25.0f,m_aimbotCfg.highlightColor,3.0f,false);
     }
     void CFeatureManager::RenderCrosshair(ID3D11DeviceContext* ctx, int w, int h) {
         float cx=(float)w/2,cy=(float)h/2,sz=m_uiCfg.crosshairSize,g=m_uiCfg.crosshairGap,t=m_uiCfg.crosshairThickness;uint32_t c=m_uiCfg.crosshairColor;
@@ -313,6 +373,137 @@ namespace Features {
     void CFeatureManager::RenderWatermark(ID3D11DeviceContext* ctx, int w, int h) {
         DrawText(ctx,"Rust External Premium",10.0f,10.0f,0x80FFFFFF,false,1.0f);
         if(m_uiCfg.showFPSCounter){char b[32];sprintf_s(b,"FPS: 144");DrawText(ctx,b,10.0f,24.0f,0x80FFFFFF,false,1.0f);}
+    }
+
+    bool CFeatureManager::ExportVisualPresets(const std::string& path) const {
+        std::ofstream out(path, std::ios::out | std::ios::trunc);
+        if (!out.is_open()) {
+            return false;
+        }
+
+        out << "# Aether ESP preset export\n";
+        out << "recent=";
+        for (size_t i = 0; i < m_visualsCfg.recentESPColors.size(); ++i) {
+            out << ColorToString(m_visualsCfg.recentESPColors[i]);
+            if (i + 1 < m_visualsCfg.recentESPColors.size()) {
+                out << ",";
+            }
+        }
+        out << "\n";
+
+        for (size_t i = 0; i < m_visualsCfg.customPresets.size(); ++i) {
+            const auto& preset = m_visualsCfg.customPresets[i];
+            out << "preset" << i << "=";
+            if (!preset.occupied) {
+                out << "0\n";
+                continue;
+            }
+
+            std::string nameStr = preset.name.data();
+            for (char& ch : nameStr) {
+                if (ch == '|') ch = '-';
+            }
+
+            out << "1|" << nameStr << "|"
+                << (preset.customESP ? "1" : "0") << "|" << ColorToString(preset.espColor) << "|"
+                << (preset.customTeam ? "1" : "0") << "|" << ColorToString(preset.teammateColor) << "|"
+                << ColorToString(preset.enemyColor) << "|" << ColorToString(preset.neutralColor) << "\n";
+        }
+
+        return true;
+    }
+
+    bool CFeatureManager::ImportVisualPresets(const std::string& path) {
+        std::ifstream in(path);
+        if (!in.is_open()) {
+            return false;
+        }
+
+        auto recent = m_visualsCfg.recentESPColors;
+        auto presets = m_visualsCfg.customPresets;
+
+        std::string line;
+        while (std::getline(in, line)) {
+            line = TrimCopy(line);
+            if (line.empty() || line[0] == '#') {
+                continue;
+            }
+
+            if (line.rfind("recent=", 0) == 0) {
+                std::string values = line.substr(7);
+                std::stringstream ss(values);
+                std::string token;
+                size_t idx = 0;
+                while (std::getline(ss, token, ',') && idx < recent.size()) {
+                    uint32_t color;
+                    if (ParseColor(token, color)) {
+                        recent[idx] = color;
+                    }
+                    ++idx;
+                }
+                continue;
+            }
+
+            if (line.rfind("preset", 0) == 0) {
+                size_t eq = line.find('=');
+                if (eq == std::string::npos) {
+                    continue;
+                }
+                std::string indexStr = line.substr(6, eq - 6);
+                size_t presetIndex = 0;
+                try {
+                    presetIndex = static_cast<size_t>(std::stoul(indexStr));
+                } catch (...) {
+                    continue;
+                }
+                if (presetIndex >= presets.size()) {
+                    continue;
+                }
+
+                std::string content = line.substr(eq + 1);
+                content = TrimCopy(content);
+                if (content == "0" || content.empty()) {
+                    presets[presetIndex] = PlayerVisualsConfig::ESPColorPreset{};
+                    continue;
+                }
+
+                std::array<std::string, 8> tokens{};
+                size_t tokenIdx = 0;
+                size_t start = 0;
+                while (tokenIdx < tokens.size()) {
+                    size_t pos = content.find('|', start);
+                    if (pos == std::string::npos) {
+                        tokens[tokenIdx++] = content.substr(start);
+                        break;
+                    } else {
+                        tokens[tokenIdx++] = content.substr(start, pos - start);
+                        start = pos + 1;
+                    }
+                }
+                if (tokenIdx < 8) {
+                    continue;
+                }
+
+                PlayerVisualsConfig::ESPColorPreset preset{};
+                preset.occupied = TrimCopy(tokens[0]) == "1";
+                std::string nameToken = tokens[1];
+                std::snprintf(preset.name.data(), preset.name.size(), "%s", TrimCopy(nameToken).c_str());
+                preset.customESP = TrimCopy(tokens[2]) == "1";
+                if (!ParseColor(tokens[3], preset.espColor)) {
+                    preset.espColor = m_visualsCfg.customESPColorValue;
+                }
+                preset.customTeam = TrimCopy(tokens[4]) == "1";
+                if (!ParseColor(tokens[5], preset.teammateColor)) preset.teammateColor = m_visualsCfg.teammateCustomColor;
+                if (!ParseColor(tokens[6], preset.enemyColor)) preset.enemyColor = m_visualsCfg.enemyCustomColor;
+                if (!ParseColor(tokens[7], preset.neutralColor)) preset.neutralColor = m_visualsCfg.neutralCustomColor;
+
+                presets[presetIndex] = preset;
+            }
+        }
+
+        m_visualsCfg.recentESPColors = recent;
+        m_visualsCfg.customPresets = presets;
+        return true;
     }
     void CFeatureManager::ApplyWorldExploits() {
         if(!m_memory)return; uint64_t b=m_memory->GetBaseAddress(),ga=m_memory->GetGameAssemblyBase();
@@ -355,11 +546,22 @@ namespace Features {
         if(m_movementCfg.instantSuicide){m_memory->Write<float>(l.address+0x200,0.0f);m_movementCfg.instantSuicide=false;}
     }
     uint32_t CFeatureManager::GetEntityColor(const Memory::GameEntity& e) const {
-        if(e.isTeammate&&m_visualsCfg.colorizeTeams)return m_visualsCfg.teammateColor;
-        switch(e.type){case Memory::EntityType::Player:return m_visualsCfg.enemyColor;case Memory::EntityType::Scientist:return m_visualsCfg.neutralColor;default:return m_visualsCfg.enemyColor;}
-    }
-    uint32_t CFeatureManager::GetHealthColor(float h, float mh) const {
-        float p=mh>0?h/mh:0; if(p>0.6f)return 0xFF30FF30; if(p>0.3f)return 0xFFFFFF30; return 0xFFFF3030;
+        auto pickColor = [&](uint32_t baseColor, uint32_t customColor) {
+            return (m_visualsCfg.customTeamColors ? customColor : baseColor);
+        };
+
+        if(e.isTeammate && m_visualsCfg.colorizeTeams) {
+            return pickColor(m_visualsCfg.teammateColor, m_visualsCfg.teammateCustomColor);
+        }
+
+        switch(e.type){
+        case Memory::EntityType::Player:
+            return pickColor(m_visualsCfg.enemyColor, m_visualsCfg.enemyCustomColor);
+        case Memory::EntityType::Scientist:
+            return pickColor(m_visualsCfg.neutralColor, m_visualsCfg.neutralCustomColor);
+        default:
+            return pickColor(m_visualsCfg.enemyColor, m_visualsCfg.enemyCustomColor);
+        }
     }
     bool CFeatureManager::InitRenderResources(ID3D11Device* d) {
         m_d3dDevice=d;

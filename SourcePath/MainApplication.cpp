@@ -253,38 +253,11 @@ void MainApplicationLoop() {
 }
 
 void HandleSystemInput() {
-    // Toggle menu with INSERT key
-    if (GetAsyncKeyState(VK_INSERT) & 1) {
+    // Toggle menu with Right Shift key
+    if (GetAsyncKeyState(VK_RSHIFT) & 1) {
         if (g_userInterface) {
             g_userInterface->ToggleMenu();
         }
-    }
-    
-    // Quick toggle functions
-    if (GetAsyncKeyState(VK_F1) & 1) {
-        // Toggle ESP (would need to be implemented in ESP system)
-        if (g_userInterface) {
-            g_userInterface->ShowNotification("ESP Toggle", ImVec4(0.2f, 1.0f, 0.2f, 1.0f));
-        }
-    }
-    
-    if (GetAsyncKeyState(VK_F2) & 1) {
-        // Toggle recoil control
-        if (g_userInterface) {
-            g_userInterface->ShowNotification("Recoil Control Toggle", ImVec4(1.0f, 0.5f, 0.2f, 1.0f));
-        }
-    }
-    
-    if (GetAsyncKeyState(VK_F3) & 1) {
-        // Toggle aim assist
-        if (g_userInterface) {
-            g_userInterface->ShowNotification("Aim Assist Toggle", ImVec4(1.0f, 0.2f, 0.5f, 1.0f));
-        }
-    }
-    
-    // Emergency exit with END key
-    if (GetAsyncKeyState(VK_END) & 1) {
-        g_applicationRunning = false;
     }
 }
 
@@ -367,7 +340,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
     
     switch (uMsg) {
         case WM_KEYDOWN:
-            if (wParam == VK_INSERT) {
+            if (wParam == VK_RSHIFT) {
                 if (g_userInterface) {
                     g_userInterface->ToggleMenu();
                 }

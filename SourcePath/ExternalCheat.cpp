@@ -93,8 +93,8 @@ namespace App {
         }
 
         std::cout << "[+] Overlay created\n";
-        std::cout << "[+] Menu initialized (INSERT to toggle)\n";
-        std::cout << "[+] Spoofer initialized (F6 to toggle)\n";
+        std::cout << "[+] Menu initialized (Right Shift to toggle)\n";
+        std::cout << "[+] Spoofer initialized\n";
         std::cout << "[+] Rust External ready!\n\n";
 
         m_running = true;

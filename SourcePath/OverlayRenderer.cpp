@@ -17,7 +17,7 @@ namespace Render {
     }
 
     LRESULT CALLBACK COverlayRenderer::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-        if (msg == WM_KEYDOWN && wParam == VK_INSERT) {
+        if (msg == WM_KEYDOWN && wParam == VK_RSHIFT) {
             if (s_instance && s_instance->m_menuManager) {
                 s_instance->m_menuManager->Toggle();
             }

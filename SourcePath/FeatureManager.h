@@ -7,6 +7,7 @@
 #include <functional>
 #include <chrono>
 #include <random>
+#include <array>
 
 namespace Features {
 
@@ -64,6 +65,16 @@ namespace Features {
     };
 
     struct PlayerVisualsConfig {
+        struct ESPColorPreset {
+            bool occupied = false;
+            std::array<char, 32> name{};
+            bool customESP = false;
+            uint32_t espColor = 0xFF3AD1FF;
+            bool customTeam = false;
+            uint32_t teammateColor = 0xFF30A0FF;
+            uint32_t enemyColor = 0xFFFF3030;
+            uint32_t neutralColor = 0xFFFFFF30;
+        };
         bool enabled = true;
         bool showPlayers = true;
         bool showNPCs = true;
@@ -76,6 +87,7 @@ namespace Features {
         uint32_t skeletonColor = 0xFFFFFFFF;
         float skeletonThickness = 1.0f;
         bool fullBodySkeleton = true;
+        bool targetBoneESP = false;
         bool viewDirectionArrow = false;
         uint32_t arrowColor = 0xFFFFFFFF;
         float arrowSize = 15.0f;
@@ -93,7 +105,9 @@ namespace Features {
         uint32_t chamColor = 0x40FF0000;
         bool playerGlow = false;
         uint32_t glowColor = 0x40FF3030;
-        bool healthbars = true;
+        bool highlightESP = false;
+        uint32_t highlightESPColor = 0x4020D0FF;
+        bool healthbars = false;
         bool colorCodedHealth = true;
         float healthbarWidth = 4.0f;
         bool distance = true;
@@ -106,13 +120,22 @@ namespace Features {
         uint32_t teammateColor = 0xFF30A0FF;
         uint32_t enemyColor = 0xFFFF3030;
         uint32_t neutralColor = 0xFFFFFF30;
+        bool customESPColor = false;
+        uint32_t customESPColorValue = 0xFF3AD1FF;
+        bool customTeamColors = false;
+        uint32_t teammateCustomColor = 0xFF30A0FF;
+        uint32_t enemyCustomColor = 0xFFFF3030;
+        uint32_t neutralCustomColor = 0xFFFFFF30;
+        std::array<uint32_t, 5> recentESPColors{0xFF3AD1FF, 0xFF30A0FF, 0xFFFF3030, 0xFFFFFF30, 0xFF9A4BFF};
+        std::array<ESPColorPreset, 3> customPresets{};
         bool hotbar = false;
+        bool inventoryOverlay = false;
         bool visibilityCheck = true;
         float maxDistance = 500.0f;
         bool fadeWithDistance = true;
         bool copySteamID = true;
-        bool showSnaplines = false;
-        uint32_t snaplineColor = 0x80FFFFFF;
+        bool tracers = false;
+        uint32_t tracerLineColor = 0x80FFFFFF;
         bool showHeadDot = true;
         uint32_t headDotColor = 0xFFFF0000;
         float headDotSize = 4.0f;
@@ -311,6 +334,7 @@ namespace Features {
         void RenderOffscreenArrow(ID3D11DeviceContext* ctx, const Memory::GameEntity& entity, int w, int h);
         void RenderChams(ID3D11DeviceContext* ctx, const Memory::GameEntity& entity, int w, int h);
         void RenderHotbar(ID3D11DeviceContext* ctx, const Memory::GameEntity& entity, int w, int h);
+        void RenderInventoryOverlay(ID3D11DeviceContext* ctx, const Memory::GameEntity& entity, int w, int h);
         void RenderAvatar(ID3D11DeviceContext* ctx, const Memory::GameEntity& entity, int w, int h);
         void RenderItemESP(ID3D11DeviceContext* ctx, const Memory::GameEntity& entity, int w, int h, const WorldVisualsConfig::ItemVisual& cfg);
         void RenderFOVCircle(ID3D11DeviceContext* ctx, int w, int h);
@@ -351,6 +375,8 @@ namespace Features {
         WorldVisualsConfig& GetWorldVisualsConfig() { return m_worldVisualsCfg; }
         MovementConfig& GetMovementConfig() { return m_movementCfg; }
         UIConfig& GetUIConfig() { return m_uiCfg; }
+        bool ExportVisualPresets(const std::string& path) const;
+        bool ImportVisualPresets(const std::string& path);
     };
 
 }

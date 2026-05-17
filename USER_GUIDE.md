@@ -12,7 +12,7 @@
 1. Start the Rust game first (let it fully load to the main menu)
 2. Run the generated executable as administrator
 3. The software will automatically attach to the Rust process
-4. Press **INSERT** to open the menu
+4. Press **Right Shift** to open the menu
 
 ### Step 3: Configure Your Settings
 - Use the in-game menu to configure ESP, aimbot, and other features
@@ -24,23 +24,14 @@
 ## Controls & Hotkeys
 
 ### Menu Controls
-- **INSERT**: Open/close the cheat menu
-- **F1**: Toggle ESP on/off
-- **F2**: Toggle recoil compensation
-- **F3**: Toggle aimbot
-- **F4**: Toggle projectile prediction
-- **F5**: Toggle resource automation
-- **F6**: Toggle auto-healing
-- **F7**: Toggle combat assistance
-- **F8**: Toggle stealth mode
-- **F9**: Emergency shutdown (close everything safely)
-- **F10**: Save current configuration
+- **Right Shift**: Open/close the Aether Control Center GUI
+- **GUI first**: All features are toggled and configured inside the menu tabs
+- **Emergency shutdown**: Use the in-menu buttons if you need to exit quickly
 
 ### In-Game Menu Navigation
-- **Mouse**: Click to select options and adjust sliders
-- **Arrow Keys**: Navigate menu items
-- **Enter**: Confirm selection
-- **Escape**: Close sub-menus
+- **Mouse**: Click to switch sections, adjust sliders, and interact with presets
+- **Scroll Wheel**: Traverse long sections inside the sidebar
+- **Right-click / drag**: Adjust color pickers with finer granularity
 
 ---
 
@@ -50,24 +41,27 @@
 **What it does**: Shows you information about other players, resources, and items through walls.
 
 **How to use**:
-1. Press **F1** to toggle ESP on/off
-2. Open menu with **INSERT**
-3. Navigate to ESP settings
+1. Open the menu with **Right Shift**
+2. Navigate to the **Visuals** section
+3. Enable ESP and select the elements you want to render
 4. Choose what you want to see:
    - Players (names, health, distance, weapons)
    - Resources (wood, stone, metal, sulfur, etc.)
    - Containers (boxes, bodies, safes)
    - Vehicles (boats, cars, helicopters)
 5. Adjust distance limits to improve performance
-6. Customize colors for each entity type
+6. Customize colors for each entity type (global or team-specific)
+7. Use the **Preset File** panel to export/import your ESP color layout (defaults to `esp_presets.cfg`)
 
-**ESP Modes**:
-- **Basic**: Simple boxes and text
-- **Advanced**: Detailed information with health bars
-- **Skeleton**: Shows player skeleton/bones
-- **Chams**: Colors players through walls
-- **Glow**: Glowing effect on entities
-- **Radar**: Mini-map showing nearby entities
+**ESP Modes & Options**:
+- **Boxes & Corners**: Standard outlines with adjustable thickness
+- **Bone Lock**: Highlight the current target’s skeleton for precise aiming
+- **Highlight Overlay**: Soft aura around your locked target with custom color
+- **Inventory Overlay**: View the target’s hotbar/attachments when they are your aimbot focus
+- **Chams & Glow**: Render color fills or glow through walls
+- **Tracers**: Draw customizable lines from your crosshair to the locked player
+- **Custom Palette**: Configure teammate/enemy/neutral palettes and store up to three user presets
+- **Import/Export**: Share or back up ESP colors via the preset file tools
 
 ---
 
@@ -75,9 +69,8 @@
 **What it does**: Automatically aims at enemies for you.
 
 **How to use**:
-1. Press **F3** to toggle aimbot on/off
-2. Open menu with **INSERT**
-3. Navigate to Aimbot settings
+1. Open menu with **Right Shift**
+2. Navigate to the **Aimbot** section and enable the module
 4. Configure your preferred settings:
    - **Aim Mode**: Choose between legit, rage, silent, etc.
    - **FOV**: Field of view (how wide the aimbot looks)
@@ -106,9 +99,8 @@
 **What it does**: Automatically gathers and crafts resources for you.
 
 **How to use**:
-1. Press **F5** to toggle resource automation on/off
-2. Open menu with **INSERT**
-3. Navigate to Resource settings
+1. Open menu with **Right Shift**
+2. Navigate to the **World** and **Movement** sections for automation toggles
 4. Select which resources to auto-gather:
    - Wood, stone, metal ore
    - Sulfur, high quality metal
@@ -131,9 +123,8 @@
 **What it does**: Helps you in combat situations automatically.
 
 **How to use**:
-1. Press **F7** to toggle combat assistance on/off
-2. Open menu with **INSERT**
-3. Navigate to Combat settings
+1. Open menu with **Right Shift**
+2. Navigate to the **Combat** section and enable desired automation
 4. Enable desired features:
    - Auto-healing (uses medkits when low)
    - Auto-reload (reloads when empty)
@@ -148,9 +139,8 @@
 **What it does**: Helps you avoid being detected by anti-cheat systems.
 
 **How to use**:
-1. Press **F8** to toggle stealth mode on/off
-2. Open menu with **INSERT**
-3. Navigate to Stealth settings
+1. Open menu with **Right Shift**
+2. Use the **Overview** & **Settings** tabs to adjust stealth modules
 4. Adjust stealth level (0-10):
    - 0-2: Basic protection (minimal performance impact)
    - 3-5: Standard protection (balanced)
@@ -174,12 +164,12 @@
 
 ### Saving Profiles
 1. Configure all your settings
-2. Press **F10** or use menu option
+2. Use the **Settings** tab in the GUI
 3. Name your profile
 4. Profile is saved to disk
 
 ### Loading Profiles
-1. Open menu with **INSERT**
+1. Open menu with **Right Shift**
 2. Navigate to Profiles section
 3. Select your saved profile
 4. Click "Load"
@@ -251,20 +241,20 @@
 - Disable fullscreen optimizations
 
 ### "Menu Won't Open"
-- Check if INSERT key is bound to something else
-- Try alternative hotkeys in settings
+- Check if **Right Shift** is bound to something else
+- Rebind the menu toggle inside the **Settings** tab if necessary
 - Verify software is running (check task manager)
 - Restart the software
 
 ### "ESP Not Showing"
-- Verify ESP is enabled (F1)
+- Verify ESP is enabled in the **Visuals** tab
 - Check distance settings (might be too low)
 - Ensure entities are in range
 - Try different ESP modes
 - Check if stealth mode is interfering
 
 ### "Aimbot Not Working"
-- Verify aimbot is enabled (F3)
+- Verify the **Aimbot** toggle is enabled
 - Check aim key binding
 - Ensure enemies are in FOV range
 - Check if team filtering is blocking targets
