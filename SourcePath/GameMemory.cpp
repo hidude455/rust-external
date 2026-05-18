@@ -153,7 +153,7 @@ namespace Memory {
         m_gameData.entityCount = entityCount;
         m_gameData.entityListAddress = entityList;
 
-        for (uint32_t i = 0; i < std::min(entityCount, 512u); i++) {
+        for (uint32_t i = 0; i < (std::min)(entityCount, 512u); i++) {
             uint64_t entityPtr = Read<uint64_t>(entityListBase + 0x20 + i * 0x8);
             if (!entityPtr) continue;
 

@@ -1,5 +1,8 @@
 #include "OverlayRenderer.h"
 
+// Forward declaration for ImGui Win32 backend function
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 namespace Render {
 
     COverlayRenderer* COverlayRenderer::s_instance = nullptr;
@@ -24,7 +27,7 @@ namespace Render {
             return 0;
         }
         if (msg == WM_KEYDOWN) {
-            ImGui_ImplWin32_ProcessHook(hwnd, msg, wParam, lParam);
+            ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam);
         }
         switch (msg) {
         case WM_DESTROY:
@@ -48,7 +51,7 @@ namespace Render {
         m_wc.style = CS_HREDRAW | CS_VREDRAW;
         m_wc.lpfnWndProc = WndProc;
         m_wc.hInstance = GetModuleHandleA(nullptr);
-        m_wc.hCursor = LoadCursorA(nullptr, IDC_ARROW);
+        m_wc.hCursor = LoadCursorW(nullptr, IDC_ARROW);
         m_wc.hbrBackground = (HBRUSH)CreateSolidBrush(RGB(0, 0, 0));
         m_wc.lpszClassName = "RustExternalOverlay";
 

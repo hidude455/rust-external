@@ -233,18 +233,19 @@ namespace App {
         m_config->LoadBool("vis_chams", vis.chams);
         m_config->LoadFloat("vis_maxdist", vis.maxDistance);
 
-        auto& exploits = m_features->GetWorldExploitsConfig();
-        m_config->LoadBool("exp_fovchanger", exploits.fovChanger);
-        m_config->LoadFloat("exp_fov", exploits.fovValue);
-        m_config->LoadBool("exp_brightnight", exploits.brightNight);
-        m_config->LoadBool("exp_flyhack", exploits.flyhack);
-        m_config->LoadBool("exp_nofalldmg", exploits.noFallDamage);
+        auto& exploits = m_features->GetExploitsConfig();
+        m_config->LoadBool("exploits.fov_changer", exploits.fovChanger, false);
+        m_config->LoadFloat("exploits.fov_value", exploits.fovValue, 90.0f);
+        m_config->LoadBool("exploits.bright_night", exploits.brightNight, false);
+        m_config->LoadBool("exploits.bright_cave", exploits.brightCave, false);
+        m_config->LoadBool("exploits.zoom", exploits.zoom, false);
 
-        auto& weapon = m_features->GetWeaponModsConfig();
-        m_config->LoadBool("wpn_recoil", weapon.recoilModifier);
-        m_config->LoadBool("wpn_spread", weapon.weaponSpread);
-        m_config->LoadBool("wpn_sway", weapon.weaponSway);
-        m_config->LoadBool("wpn_rapidfire", weapon.rapidFire);
+        auto& weapon = m_features->GetWeaponConfig();
+        m_config->LoadBool("weapon.recoil", weapon.recoilModifier, false);
+        m_config->LoadBool("weapon.spread", weapon.weaponSpread, false);
+        m_config->LoadBool("weapon.rapid", weapon.rapidFire, false);
+        m_config->LoadBool("weapon.thick", weapon.thickBullet, false);
+        m_config->LoadBool("weapon.sway", weapon.weaponSway, false);
 
         auto& world = m_features->GetWorldVisualsConfig();
         m_config->LoadBool("world_enabled", world.enabled);
@@ -287,17 +288,19 @@ namespace App {
         m_config->SaveBool("vis_chams", vis.chams);
         m_config->SaveFloat("vis_maxdist", vis.maxDistance);
 
-        const auto& exploits = m_features->GetWorldExploitsConfig();
-        m_config->SaveBool("exp_fovchanger", exploits.fovChanger);
-        m_config->SaveFloat("exp_fov", exploits.fovValue);
-        m_config->SaveBool("exp_brightnight", exploits.brightNight);
-        m_config->SaveBool("exp_flyhack", exploits.flyhack);
+        const auto& exploits = m_features->GetExploitsConfig();
+        m_config->SaveBool("exploits.fov_changer", exploits.fovChanger);
+        m_config->SaveFloat("exploits.fov_value", exploits.fovValue);
+        m_config->SaveBool("exploits.bright_night", exploits.brightNight);
+        m_config->SaveBool("exploits.bright_cave", exploits.brightCave);
+        m_config->SaveBool("exploits.zoom", exploits.zoom);
 
-        const auto& weapon = m_features->GetWeaponModsConfig();
-        m_config->SaveBool("wpn_recoil", weapon.recoilModifier);
-        m_config->SaveBool("wpn_spread", weapon.weaponSpread);
-        m_config->SaveBool("wpn_sway", weapon.weaponSway);
-        m_config->SaveBool("wpn_rapidfire", weapon.rapidFire);
+        const auto& weapon = m_features->GetWeaponConfig();
+        m_config->SaveBool("weapon.recoil", weapon.recoilModifier);
+        m_config->SaveBool("weapon.spread", weapon.weaponSpread);
+        m_config->SaveBool("weapon.rapid", weapon.rapidFire);
+        m_config->SaveBool("weapon.thick", weapon.thickBullet);
+        m_config->SaveBool("weapon.sway", weapon.weaponSway);
 
         const auto& world = m_features->GetWorldVisualsConfig();
         m_config->SaveBool("world_enabled", world.enabled);

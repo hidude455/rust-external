@@ -97,7 +97,7 @@ namespace AdvancedObfuscation {
     class MemoryObfuscator {
     private:
         static std::mt19937 rng;
-        static std::uniform_int_distribution<uint8_t> dist;
+        static std::uniform_int_distribution<uint16_t> dist;
         
     public:
         static void ScrambleMemory(void* ptr, size_t size) {
@@ -121,9 +121,6 @@ namespace AdvancedObfuscation {
             }
         }
     };
-
-    std::mt19937 MemoryObfuscator::rng(std::chrono::system_clock::now().time_since_epoch().count());
-    std::uniform_int_distribution<uint8_t> MemoryObfuscator::dist(0, 255);
 
     // Control flow obfuscation
     class ControlFlowObfuscator {
@@ -161,9 +158,6 @@ namespace AdvancedObfuscation {
             }
         }
     };
-
-    std::mt19937 ControlFlowObfuscator::rng(std::chrono::system_clock::now().time_since_epoch().count());
-    std::uniform_int_distribution<int> ControlFlowObfuscator::dist(1, 50);
 
     // Thread obfuscation
     class ThreadObfuscator {
@@ -216,9 +210,6 @@ namespace AdvancedObfuscation {
             Sleep((int)(elapsed * 1000) + dist(rng));
         }
     };
-
-    std::mt19937 TimingObfuscator::rng(std::chrono::system_clock::now().time_since_epoch().count());
-    std::uniform_int_distribution<int> TimingObfuscator::dist(10, 100);
 
     // Registry obfuscation
     class RegistryObfuscator {

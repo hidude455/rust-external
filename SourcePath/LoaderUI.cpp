@@ -11,6 +11,8 @@
 #include "../MenuPath/imgui/backends/imgui_impl_dx11.h"
 #include "../MenuPath/imgui/backends/imgui_impl_win32.h"
 
+extern IMGUI_IMPL_API __int64 ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3dcompiler.lib")

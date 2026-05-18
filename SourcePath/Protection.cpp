@@ -266,9 +266,8 @@ namespace Security {
             
             if (Process32First(hSnapshot, &pe32)) {
                 do {
-                    // Convert WCHAR to char
-                    char processNameA[260];
-                    WideCharToMultiByte(CP_ACP, 0, pe32.szExeFile, -1, processNameA, 260, nullptr, nullptr);
+                    char processNameA[MAX_PATH];
+                    WideCharToMultiByte(CP_UTF8, 0, pe32.szExeFile, -1, processNameA, MAX_PATH, nullptr, nullptr);
                     std::string processName(processNameA);
                     std::transform(processName.begin(), processName.end(), processName.begin(), ::tolower);
                     
@@ -305,7 +304,9 @@ namespace Security {
             
             if (Process32First(hSnapshot, &pe32)) {
                 do {
-                    std::string processName(pe32.szExeFile);
+                    char processNameA[MAX_PATH];
+                    WideCharToMultiByte(CP_UTF8, 0, pe32.szExeFile, -1, processNameA, MAX_PATH, nullptr, nullptr);
+                    std::string processName(processNameA);
                     std::transform(processName.begin(), processName.end(), processName.begin(), ::tolower);
                     
                     if (processName.find("sandboxie") != std::string::npos ||
@@ -337,7 +338,9 @@ namespace Security {
             
             if (Process32First(hSnapshot, &pe32)) {
                 do {
-                    std::string processName(pe32.szExeFile);
+                    char processNameA[MAX_PATH];
+                    WideCharToMultiByte(CP_UTF8, 0, pe32.szExeFile, -1, processNameA, MAX_PATH, nullptr, nullptr);
+                    std::string processName(processNameA);
                     std::transform(processName.begin(), processName.end(), processName.begin(), ::tolower);
                     
                     for (const char* monitor : monitorProcesses) {
@@ -739,4 +742,7 @@ namespace Security {
         }
     }
     
+    void CProtection::EnableStealthMode() {
+        // Stub implementation for stealth mode
+    }
 } // namespace Security

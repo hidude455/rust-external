@@ -357,7 +357,8 @@ namespace Auth {
         }
 
         if (LoadLicenseFromFile()) {
-            if (m_license.hwid != m_hwid) {
+            std::string currentHWID = m_hwid.cpuId + "|" + m_hwid.diskSerial + "|" + m_hwid.motherboardSerial;
+            if (m_license.hwid != currentHWID) {
                 m_status = AuthStatus::HWIDMismatch;
                 return m_status;
             }

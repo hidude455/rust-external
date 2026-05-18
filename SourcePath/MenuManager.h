@@ -11,7 +11,7 @@
 
 class CMenuManager {
 public:
-    CMenuManager(CFeatureManager* features);
+    CMenuManager(Features::CFeatureManager* features);
     ~CMenuManager();
 
     bool Initialize(HWND hwnd, ID3D11Device* device, ID3D11DeviceContext* ctx);
@@ -38,9 +38,9 @@ private:
     void RenderMovementTab();
     void RenderSpooferTab();
     void RenderSettingsTab();
-    void RenderKeybindPicker(const char* label, Keybind& keybind);
+    void RenderKeybindPicker(const char* label, Features::Keybind& keybind);
 
-    CFeatureManager* m_features;
+    Features::CFeatureManager* m_features;
     Spoofer::CAdvancedSpoofer* m_spoofer;
     SpooferGUI::CSpooferGUI* m_spooferGUI;
     RustEvasion::CRustAntiCheatEvasion* m_rustEvasion;

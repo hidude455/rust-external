@@ -36,7 +36,8 @@ namespace Security {
 
     bool CSecurityLayer::CheckDebugger() {
         if (IsDebuggerPresent()) return true;
-        if (CheckRemoteDebuggerPresent(GetCurrentProcess(), &m_debuggerPresent) && m_debuggerPresent) return true;
+        BOOL debuggerPresent = FALSE;
+        if (CheckRemoteDebuggerPresent(GetCurrentProcess(), &debuggerPresent) && debuggerPresent) return true;
 
         HMODULE hNtdll = GetModuleHandleA("ntdll.dll");
         if (hNtdll) {

@@ -7,12 +7,12 @@
 #include <psapi.h>
 #include "../MenuPath/imgui/imgui.h"
 
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 #include <windows.h>
-#undef NOMINMAX
 
-// Stub for ImGui_ImplWin32_WndProcHandler if not available
-extern "C" LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+extern IMGUI_IMPL_API __int64 ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 namespace UI {
     
@@ -134,16 +134,16 @@ namespace UI {
         // Menu fade animation
         if (m_config.showMenu && m_menuAlpha < 1.0f) {
             m_menuAlpha += deltaTime * m_config.menuFadeSpeed;
-            m_menuAlpha = std::min(m_menuAlpha, 1.0f);
+            m_menuAlpha = (std::min)(m_menuAlpha, 1.0f);
         } else if (!m_config.showMenu && m_menuAlpha > 0.0f) {
             m_menuAlpha -= deltaTime * m_config.menuFadeSpeed;
-            m_menuAlpha = std::max(m_menuAlpha, 0.0f);
+            m_menuAlpha = (std::max)(m_menuAlpha, 0.0f);
         }
         
         // Tab transition animation
         if (m_config.currentTab != m_config.previousTab) {
             auto tabElapsed = std::chrono::duration<float>(currentTime - m_tabChangeTime).count();
-            m_tabTransitionProgress = std::min(1.0f, tabElapsed * m_config.tabTransitionSpeed);
+            m_tabTransitionProgress = (std::min)(1.0f, tabElapsed * m_config.tabTransitionSpeed);
             
             if (m_tabTransitionProgress >= 1.0f) {
                 m_config.previousTab = m_config.currentTab;

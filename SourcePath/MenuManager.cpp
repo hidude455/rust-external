@@ -10,7 +10,7 @@ namespace {
     const ImVec4 kMutedText = ImVec4(0.76f, 0.80f, 0.88f, 1.0f);
 }
 
-CMenuManager::CMenuManager(CFeatureManager* features) : m_features(features), m_spoofer(nullptr), m_spooferGUI(nullptr), m_rustEvasion(nullptr) {}
+CMenuManager::CMenuManager(Features::CFeatureManager* features) : m_features(features), m_spoofer(nullptr), m_spooferGUI(nullptr), m_rustEvasion(nullptr) {}
 
 CMenuManager::~CMenuManager() {
     Shutdown();
@@ -346,7 +346,7 @@ void CMenuManager::RenderAimbotTab() {
     ImGui::NextColumn();
     ImGui::TextColored(kMutedText, "Target Filtering");
     ImGui::Separator();
-    ImGui::Combo("Preferred Hitbox", (int*)&cfg.hitbox, "Head\0Neck\0Chest\0Stomach\0Pelvis\0");
+    ImGui::Combo("Preferred Hitbox", (int*)&cfg.targetBone, "Head\0Neck\0Chest\0Stomach\0Pelvis\0");
     ImGui::Checkbox("Target Players", &cfg.targetPlayers);
     ImGui::Checkbox("Target NPCs", &cfg.targetNPCs);
     ImGui::Checkbox("Target Animals", &cfg.targetAnimals);
@@ -392,28 +392,28 @@ void CMenuManager::RenderAimbotTab() {
 }
 
 void CMenuManager::RenderPlayerVisualsTab() {
-    auto& cfg = m_features->GetPlayerVisualsConfig();
+    auto& cfg = m_features->GetVisualsConfig();
     ImGui::BeginChild("##player_visuals", ImVec2(0.f, ImGui::GetContentRegionAvail().y), false, ImGuiWindowFlags_NoScrollbar);
     ImGui::Columns(2, nullptr, false);
 
     ImGui::TextColored(kMutedText, "Core Overlays");
     ImGui::Separator();
-    ImGui::Checkbox("Box ESP", &cfg.boxESP);
-    ImGui::Combo("Box Style", (int*)&cfg.boxStyle, "Full\0Corner\0");
+    ImGui::Checkbox("Show Players", &cfg.showPlayers);
+    ImGui::Checkbox("Show NPCs", &cfg.showNPCs);
     ImGui::Checkbox("Skeletons", &cfg.skeletons);
     ImGui::Checkbox("Target Bone Lock", &cfg.targetBoneESP);
     ImGui::Checkbox("Chams", &cfg.chams);
     ImGui::Checkbox("Glow", &cfg.playerGlow);
     ImGui::Checkbox("Healthbars", &cfg.healthbars);
-    ImGui::Checkbox("Distance Indicator", &cfg.distanceIndicator);
-    ImGui::Checkbox("Username Display", &cfg.usernameDisplay);
+    ImGui::Checkbox("Distance", &cfg.distance);
+    ImGui::Checkbox("Username", &cfg.username);
 
     ImGui::NextColumn();
     ImGui::TextColored(kMutedText, "Supplementary");
     ImGui::Separator();
-    ImGui::Checkbox("Held Item Display", &cfg.heldItemDisplay);
+    ImGui::Checkbox("Held Item", &cfg.heldItem);
     ImGui::Checkbox("Inventory Overlay", &cfg.inventoryOverlay);
-    ImGui::Checkbox("Team ID Colors", &cfg.teamIDColors);
+    ImGui::Checkbox("Team ID", &cfg.teamID);
     ImGui::Checkbox("Custom Team Palette", &cfg.customTeamColors);
     if (cfg.customTeamColors) {
         ImGui::Indent();
@@ -431,13 +431,13 @@ void CMenuManager::RenderPlayerVisualsTab() {
         }
         ImGui::Unindent();
     }
-    ImGui::Checkbox("Is Inside Building", &cfg.isInsideBuilding);
-    ImGui::Checkbox("Hotbar Display", &cfg.hotbarDisplay);
+    ImGui::Checkbox("Is Inside Building", &cfg.insideBuilding);
+    ImGui::Checkbox("Hotbar", &cfg.hotbar);
     ImGui::Checkbox("Steam Avatar", &cfg.steamAvatar);
     ImGui::Checkbox("View Direction Arrow", &cfg.viewDirectionArrow);
     ImGui::Checkbox("Offscreen Arrows", &cfg.offscreenArrows);
     ImGui::Checkbox("Visibility Check", &cfg.visibilityCheck);
-    ImGui::SliderFloat("Render Distance", &cfg.renderDistance, 0.0f, 1000.0f);
+    ImGui::SliderFloat("Max Distance", &cfg.maxDistance, 0.0f, 1000.0f);
     ImGui::Checkbox("Custom ESP Color", &cfg.customESPColor);
     if (cfg.customESPColor) {
         ImVec4 customColor = ImGui::ColorConvertU32ToFloat4(cfg.customESPColorValue);
@@ -578,7 +578,7 @@ void CMenuManager::RenderPlayerVisualsTab() {
             }
             ImGui::SameLine();
             if (ImGui::Button("Clear")) {
-                preset = PlayerVisualsConfig::ESPColorPreset{};
+                preset = Features::PlayerVisualsConfig::ESPColorPreset{};
             }
         }
         ImGui::PopID();
@@ -603,7 +603,7 @@ void CMenuManager::RenderPlayerVisualsTab() {
 }
 
 void CMenuManager::RenderWorldExploitsTab() {
-    auto& cfg = m_features->GetWorldExploitsConfig();
+    auto& cfg = m_features->GetExploitsConfig();
     ImGui::BeginChild("##world_exploits", ImVec2(0.f, ImGui::GetContentRegionAvail().y * 0.6f), false, ImGuiWindowFlags_NoScrollbar);
     ImGui::Columns(2, nullptr, false);
 
@@ -649,7 +649,7 @@ void CMenuManager::RenderWorldExploitsTab() {
 }
 
 void CMenuManager::RenderWeaponModsTab() {
-    auto& cfg = m_features->GetWeaponModsConfig();
+    auto& cfg = m_features->GetWeaponConfig();
     ImGui::Checkbox("Recoil Modifier", &cfg.recoilModifier);
     ImGui::SliderFloat("Recoil X", &cfg.recoilX, 0.0f, 2.0f);
     ImGui::SliderFloat("Recoil Y", &cfg.recoilY, 0.0f, 2.0f);
@@ -663,7 +663,7 @@ void CMenuManager::RenderWeaponModsTab() {
     ImGui::Checkbox("Hit Material Override", &cfg.hitMaterialOverride);
     ImGui::SliderInt("Hit Material", (int*)&cfg.hitMaterial, 0, 10);
     ImGui::Checkbox("Hitbox Override", &cfg.hitboxOverride);
-    ImGui::SliderInt("Hitbox Override Value", (int*)&cfg.hitboxOverrideValue, 0, 10);
+    ImGui::SliderFloat("Hitbox Multiplier", &cfg.hitboxMultiplier, 1.0f, 5.0f);
     ImGui::Checkbox("Smart Patrol Override", &cfg.smartPatrolOverride);
     ImGui::Checkbox("Ammo Indicator", &cfg.ammoIndicator);
     ImGui::Checkbox("Reload Indicator", &cfg.reloadIndicator);
@@ -671,24 +671,23 @@ void CMenuManager::RenderWeaponModsTab() {
 
 void CMenuManager::RenderWorldVisualsTab() {
     auto& cfg = m_features->GetWorldVisualsConfig();
-    ImGui::Checkbox("All Items Toggleable", &cfg.allItemsToggleable);
-    ImGui::Checkbox("Custom Colors Per Item", &cfg.customColorsPerItem);
-    ImGui::SliderFloat("Distance Slider", &cfg.distanceSlider, 0.0f, 1000.0f);
-    ImGui::Checkbox("World Chams/Glow", &cfg.worldChams);
     ImGui::Checkbox("Blur Effect", &cfg.blurEffect);
-    ImGui::Checkbox("Box ESP Toggle", &cfg.boxESP);
-    ImGui::Checkbox("Collectables ESP", &cfg.collectablesESP);
-    ImGui::Checkbox("Multi-Tier Crate ESP", &cfg.multiTierCrateESP);
-    ImGui::Checkbox("Full Vehicle ESP", &cfg.fullVehicleESP);
-    ImGui::Checkbox("Deployables ESP", &cfg.deployablesESP);
-    ImGui::Checkbox("All Ores ESP", &cfg.allOresESP);
-    ImGui::Checkbox("All Animals ESP", &cfg.allAnimalsESP);
-    ImGui::Checkbox("Stashes & Hidden Items", &cfg.stashesHiddenItems);
-    ImGui::Checkbox("Corpses & Backpacks", &cfg.corpsesBackpacks);
-    ImGui::Checkbox("Supply Drops", &cfg.supplyDrops);
-    ImGui::Checkbox("Hackable Crates", &cfg.hackableCrates);
-    ImGui::Checkbox("Patrol Helicopter", &cfg.patrolHelicopter);
-    ImGui::Checkbox("Bradley APC", &cfg.bradleyAPC);
+    ImGui::SliderFloat("Blur Strength", &cfg.blurStrength, 0.0f, 10.0f);
+    ImGui::Checkbox("Box ESP", &cfg.boxESP);
+    ImGui::SliderFloat("Global Max Distance", &cfg.globalMaxDistance, 0.0f, 1000.0f);
+    ImGui::Checkbox("Collectables ESP", &cfg.collectables.enabled);
+    ImGui::Checkbox("Multi-Tier Crate ESP", &cfg.multiTierCrates.enabled);
+    ImGui::Checkbox("Vehicle ESP", &cfg.vehicles.enabled);
+    ImGui::Checkbox("Deployables ESP", &cfg.deployables.enabled);
+    ImGui::Checkbox("All Ores ESP", &cfg.allOres.enabled);
+    ImGui::Checkbox("All Animals ESP", &cfg.allAnimals.enabled);
+    ImGui::Checkbox("Stashes ESP", &cfg.stashes.enabled);
+    ImGui::Checkbox("Corpses ESP", &cfg.corpses.enabled);
+    ImGui::Checkbox("Backpacks ESP", &cfg.backpacks.enabled);
+    ImGui::Checkbox("Supply Drops ESP", &cfg.supplyDrops.enabled);
+    ImGui::Checkbox("Hackable Crates ESP", &cfg.hackableCrates.enabled);
+    ImGui::Checkbox("Patrol Helicopter", &cfg.patrolHelicopter.enabled);
+    ImGui::Checkbox("Bradley APC", &cfg.bradleyAPC.enabled);
 }
 
 void CMenuManager::RenderMovementTab() {
@@ -717,18 +716,18 @@ void CMenuManager::RenderSettingsTab() {
     ImGui::Checkbox("Local Config Profiles", &cfg.localConfigProfiles);
     ImGui::Checkbox("Import/Export Configs", &cfg.importExportConfigs);
     ImGui::Checkbox("Custom Crosshairs", &cfg.customCrosshairs);
-    ImGui::Checkbox("Full Keybind Configuration", &cfg.fullKeybindConfiguration);
+    // ImGui::Checkbox("Full Keybind Configuration", &cfg.fullKeybindConfiguration); // Member not found in UIConfig
     ImGui::SliderFloat("UI Scale", &cfg.uiScale, 0.5f, 2.0f);
     ImGui::Checkbox("Show FPS Counter", &cfg.showFPSCounter);
     ImGui::Checkbox("Show Watermark", &cfg.showWatermark);
     ImGui::Text("Menu Key: Right Shift");
 }
 
-void CMenuManager::RenderKeybindPicker(const char* label, Keybind& keybind) {
+void CMenuManager::RenderKeybindPicker(const char* label, Features::Keybind& keybind) {
     ImGui::Text("%s", label);
     ImGui::SameLine();
     char keyName[32];
-    sprintf_s(keyName, sizeof(keyName), "Key: %d (Mode: %s)", keybind.key, keybind.mode == KeybindMode::Hold ? "Hold" : "Toggle");
+    sprintf_s(keyName, sizeof(keyName), "Key: %d (Mode: %s)", keybind.key, keybind.mode == Features::KeybindMode::Hold ? "Hold" : "Toggle");
     if (ImGui::Button(keyName)) {
         ImGui::OpenPopup("KeybindPopup");
     }
@@ -744,7 +743,7 @@ void CMenuManager::RenderKeybindPicker(const char* label, Keybind& keybind) {
                 }
             }
         } else {
-            ImGui::Combo("Mode", (int*)&keybind.mode, "Toggle\0Hold\0");
+            ImGui::Combo("Mode", (int*)&keybind.mode, "Toggle\0Hold\0", 2);
             if (ImGui::Button("Done")) {
                 waitingForKey = true;
                 ImGui::CloseCurrentPopup();

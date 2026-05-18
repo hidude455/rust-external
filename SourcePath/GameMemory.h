@@ -134,9 +134,8 @@ namespace Memory {
         void UpdateCamera();
         void UpdateEntityData(GameEntity& entity);
 
-        bool WorldToScreen(const Vector3& worldPos, Vector2& screenPos, int screenW, int screenH);
-
     public:
+        bool WorldToScreen(const Vector3& worldPos, Vector2& screenPos, int screenW, int screenH);
         CGameMemory();
         ~CGameMemory();
 

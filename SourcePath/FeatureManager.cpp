@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include "FeatureManager.h"
 #include <cmath>
 #include <algorithm>
@@ -5,6 +6,7 @@
 #include <sstream>
 #include <iomanip>
 #include <cctype>
+#include <d3dcompiler.h>
 
 namespace {
     std::string TrimCopy(const std::string& s) {
@@ -165,7 +167,7 @@ namespace Features {
 
     float CFeatureManager::CalculateHitchance(const Memory::GameEntity& t, const Memory::Vector2&) {
         float d=t.distance; if(d<10)return 100; if(d>400)return 30;
-        float bc=100-(d/400)*70; if(t.velocity.x||t.velocity.z)bc-=15; return std::max(0.0f,bc);
+        float bc=100-(d/400)*70; if(t.velocity.x||t.velocity.z)bc-=15; return (std::max)(0.0f,bc);
     }
 
     void CFeatureManager::ApplySilentAim(const Memory::Vector2& aa) {
@@ -534,7 +536,7 @@ namespace Features {
         if(m_weaponCfg.thickBullet){uint64_t w=m_memory->Read<uint64_t>(l.address+0x5D0);if(w)m_memory->Write<float>(w+0x40,2.0f);}
         if(m_weaponCfg.bigBullets){uint64_t w=m_memory->Read<uint64_t>(l.address+0x5D0);if(w)m_memory->Write<float>(w+0x44,3.0f);}
         if(m_weaponCfg.hitMaterialOverride){uint64_t w=m_memory->Read<uint64_t>(l.address+0x5D0);if(w)m_memory->Write<uint32_t>(w+0x48,m_weaponCfg.hitMaterial);}
-        if(m_weaponCfg.hitboxOverride){uint64_t w=m_memory->Read<uint64_t>(l.address+0x5D0);if(w)m_memory->Write<uint32_t>(w+0x4C,m_weaponCfg.hitboxOverrideValue);}
+        if(m_weaponCfg.hitboxOverride){uint64_t w=m_memory->Read<uint64_t>(l.address+0x5D0);if(w)m_memory->Write<uint32_t>(w+0x4C,(uint32_t)(m_weaponCfg.hitboxMultiplier*2.0f));}
     }
     void CFeatureManager::ApplyMovement() {
         if(!m_memory)return; const auto& l=m_memory->GetLocalPlayer(); if(!l.address)return;
@@ -595,13 +597,11 @@ namespace Features {
 
     void CFeatureManager::FlushBatch(ID3D11DeviceContext* ctx) {
         if(m_vertices.empty()||!m_renderInit)return;
-        if(m_vb){m_vb->Release();m_vb=nullptr;}
-        if(m_ib){m_ib->Release();m_ib=nullptr;}
-        D3D11_BUFFER_DESC bd={};bd.Usage=D3D11_USAGE_DEFAULT;bd.BindFlags=D3D11_BIND_VERTEX_BUFFER;
+        D3D11_BUFFER_DESC bd={};
+        D3D11_SUBRESOURCE_DATA sd={};
         bd.ByteWidth=(UINT)(m_vertices.size()*sizeof(Vertex));
-        D3D11_SUBRESOURCE_DATA sd={m_vertices.data()};
+        sd.pSysMem=m_vertices.data();
         m_d3dDevice->CreateBuffer(&bd,&sd,&m_vb);
-        bd.BindFlags=D3D11_BIND_INDEX_BUFFER;
         bd.ByteWidth=(UINT)(m_indices.size()*sizeof(uint32_t));
         sd.pSysMem=m_indices.data();
         m_d3dDevice->CreateBuffer(&bd,&sd,&m_ib);
@@ -615,6 +615,18 @@ namespace Features {
         float bf[4]={0};ctx->OMSetBlendState(m_blendState,bf,0xFFFFFFFF);
         ctx->DrawIndexed((UINT)m_indices.size(),0,0);
         m_vertices.clear();m_indices.clear();
+    }
+
+    void CFeatureManager::RenderPrediction(ID3D11DeviceContext* ctx, int w, int h) {
+        // Stub implementation for RenderPrediction
+    }
+
+    void CFeatureManager::RenderTargetLine(ID3D11DeviceContext* ctx, int w, int h) {
+        // Stub implementation for RenderTargetLine
+    }
+
+    void CFeatureManager::RenderFOVCircle(ID3D11DeviceContext* ctx, int w, int h) {
+        // Stub implementation for RenderFOVCircle
     }
 
     void CFeatureManager::DrawBox(ID3D11DeviceContext* ctx, float x, float y, float w, float h, uint32_t c, float t) {
