@@ -4,6 +4,12 @@
 #include <dxgi.h>
 #include <tchar.h>
 #include <thread>
+#include <string>
+#include <fstream>
+#include <chrono>
+#include <iomanip>
+#include <filesystem>
+#include <sstream>
 
 #include "AuthSystem.h"
 
@@ -20,6 +26,68 @@ extern IMGUI_IMPL_API __int64 ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 namespace {
     constexpr int kWindowWidth = 420;
     constexpr int kWindowHeight = 260;
+
+    std::string CurrentTimestamp() {
+        auto now = std::chrono::system_clock::now();
+        auto time = std::chrono::system_clock::to_time_t(now);
+        std::tm tmStruct;
+        localtime_s(&tmStruct, &time);
+        std::ostringstream oss;
+        oss << std::put_time(&tmStruct, "%Y-%m-%d %H:%M:%S");
+        return oss.str();
+    }
+
+    std::string GetLogFilePath() {
+        char buffer[MAX_PATH] = {};
+        DWORD written = GetTempPathA(MAX_PATH, buffer);
+        if (written == 0 || written > MAX_PATH) {
+            return "loader_debug.log";
+        }
+
+        std::filesystem::path logDir(buffer);
+        logDir /= "RustExternal";
+
+        try {
+            std::filesystem::create_directories(logDir);
+        } catch (...) {
+            // Fall back to temp root if creating directory fails
+            logDir = std::filesystem::path(buffer);
+        }
+
+        return (logDir / "loader_debug.log").string();
+    }
+
+    void AppendDebugLog(const std::string& message) {
+        std::string logPath = GetLogFilePath();
+        std::ofstream logFile(logPath, std::ios::out | std::ios::app);
+        if (!logFile.is_open()) {
+            std::string debugMsg = "Failed to open log file: " + logPath + "\n";
+            OutputDebugStringA(debugMsg.c_str());
+            return;
+        }
+        logFile << "[" << CurrentTimestamp() << "] " << message << "\n";
+        logFile.flush();
+    }
+
+    void ShowWin32ErrorBox(const char* stage, DWORD error) {
+        char buffer[256];
+        sprintf_s(buffer, "Failed during %s. Win32 error code: %lu", stage, static_cast<unsigned long>(error));
+        MessageBoxA(nullptr, buffer, "Rust External", MB_ICONERROR | MB_OK);
+        AppendDebugLog(std::string(stage) + " failed with Win32 error " + std::to_string(error));
+    }
+
+    void ShowHRESULTErrorBox(const char* stage, HRESULT hr) {
+        char buffer[256];
+        sprintf_s(buffer, "Failed during %s. HRESULT: 0x%08lX", stage, static_cast<unsigned long>(hr));
+        MessageBoxA(nullptr, buffer, "Rust External", MB_ICONERROR | MB_OK);
+        std::ostringstream oss;
+        oss << stage << " failed with HRESULT 0x" << std::uppercase << std::hex << std::setw(8) << std::setfill('0') << (static_cast<unsigned long>(hr) & 0xFFFFFFFFUL);
+        AppendDebugLog(oss.str());
+    }
+}
+
+void LoaderLog(const std::string& message) {
+    AppendDebugLog(message);
 }
 
 static CLoaderUI* g_loaderUiInstance = nullptr;
@@ -40,12 +108,16 @@ CLoaderUI::~CLoaderUI() {
 }
 
 bool CLoaderUI::Initialize() {
+    AppendDebugLog("CLoaderUI::Initialize - begin");
     if (!CreateRenderWindow()) {
+        ShowWin32ErrorBox("CreateRenderWindow", GetLastError());
         return false;
     }
+    AppendDebugLog("CreateRenderWindow succeeded");
     if (!InitializeDevice()) {
         return false;
     }
+    AppendDebugLog("InitializeDevice succeeded");
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -70,23 +142,32 @@ bool CLoaderUI::Initialize() {
     style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.16f, 0.48f, 0.30f, 1.00f);
 
     if (!ImGui_ImplWin32_Init(m_hwnd)) {
+        ShowWin32ErrorBox("ImGui_ImplWin32_Init", GetLastError());
         return false;
     }
+    AppendDebugLog("ImGui_ImplWin32_Init succeeded");
     if (!ImGui_ImplDX11_Init(m_device, m_context)) {
+        ShowHRESULTErrorBox("ImGui_ImplDX11_Init", E_FAIL);
         return false;
     }
+    AppendDebugLog("ImGui_ImplDX11_Init succeeded");
 
     m_initialized = true;
+    AppendDebugLog("CLoaderUI::Initialize - completed successfully");
     return true;
 }
 
 LoaderLaunchResult CLoaderUI::Run() {
+    AppendDebugLog("CLoaderUI::Run - begin");
     LoaderLaunchResult result;
     if (!m_initialized) {
+        AppendDebugLog("Run aborted: not initialized");
         return result;
     }
 
     m_running = true;
+    AppendDebugLog("Message loop started");
+
     ShowWindow(m_hwnd, SW_SHOWDEFAULT);
     UpdateWindow(m_hwnd);
 
@@ -97,10 +178,12 @@ LoaderLaunchResult CLoaderUI::Run() {
             DispatchMessage(&msg);
             if (msg.message == WM_QUIT) {
                 m_running = false;
+                AppendDebugLog("Received WM_QUIT, stopping message loop");
             }
         }
 
         if (!m_running) {
+            AppendDebugLog("m_running false, breaking loop");
             break;
         }
 
@@ -111,13 +194,16 @@ LoaderLaunchResult CLoaderUI::Run() {
             result.cheat = std::move(m_cheat);
             m_running = false;
             m_shouldLaunch.store(false);
+            AppendDebugLog("Launch requested, exiting loop");
         }
     }
 
+    AppendDebugLog("CLoaderUI::Run - exiting");
     return result;
 }
 
 bool CLoaderUI::CreateRenderWindow() {
+    AppendDebugLog("CreateRenderWindow - registering class");
     m_windowClass = {};
     m_windowClass.cbSize = sizeof(WNDCLASSEX);
     m_windowClass.style = CS_CLASSDC;
@@ -128,16 +214,19 @@ bool CLoaderUI::CreateRenderWindow() {
         return false;
     }
 
+    AppendDebugLog("CreateRenderWindow - creating window");
     m_hwnd = CreateWindow(m_windowClass.lpszClassName, _T("Aether Loader"),
         WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
         CW_USEDEFAULT, CW_USEDEFAULT, kWindowWidth, kWindowHeight, nullptr, nullptr, m_windowClass.hInstance, nullptr);
 
     if (!m_hwnd) {
         UnregisterClass(m_windowClass.lpszClassName, m_windowClass.hInstance);
+        AppendDebugLog("CreateRenderWindow - CreateWindow failed");
         return false;
     }
 
     SetWindowLongPtr(m_hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
+    AppendDebugLog("CreateRenderWindow - success");
     return true;
 }
 
@@ -166,13 +255,16 @@ bool CLoaderUI::InitializeDevice() {
         featureLevelArray, 2, D3D11_SDK_VERSION, &sd, &m_swapChain, &m_device, &featureLevel, &m_context);
 
     if (FAILED(hr)) {
+        ShowHRESULTErrorBox("D3D11CreateDeviceAndSwapChain", hr);
         return false;
     }
+    AppendDebugLog("InitializeDevice - swap chain created");
 
     ID3D11Texture2D* backBuffer = nullptr;
     if (SUCCEEDED(m_swapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer)))) {
         m_device->CreateRenderTargetView(backBuffer, nullptr, &m_renderTarget);
         backBuffer->Release();
+        AppendDebugLog("InitializeDevice - render target created");
     }
     return true;
 }

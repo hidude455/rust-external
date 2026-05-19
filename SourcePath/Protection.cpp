@@ -425,13 +425,9 @@ namespace Security {
             pNtSetThread(GetCurrentThread(), (THREADINFOCLASS)hideFromDebugger, nullptr, 0);
         }
         
-        // Set trap flag to cause single-step exception
-        // Note: Inline assembly not supported on x64, using alternative method
-        CONTEXT ctx;
-        ctx.ContextFlags = CONTEXT_CONTROL;
-        GetThreadContext(GetCurrentThread(), &ctx);
-        ctx.EFlags |= 0x100; // Set trap flag
-        SetThreadContext(GetCurrentThread(), &ctx);
+        // Previously this enabled the CPU trap flag to induce single-step exceptions.
+        // Without a vectored handler installed this crashed the loader at startup,
+        // so skip toggling the flag in release builds to keep initialization stable.
     }
     
     void CProtection::AntiDumpTechniques() {

@@ -12,6 +12,7 @@ namespace Security {
         bool m_virtualMachine;
         bool m_analysisTools;
         bool m_integrityOK;
+        PVOID m_vehHandle;
 
         bool CheckDebugger();
         bool CheckVirtualMachine();

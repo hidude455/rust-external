@@ -9,6 +9,7 @@
  */
 
 #include "Core.h"
+#include "LoaderUI.h"
 #include "MemoryAccess.h"
 #include "RendererDX.h"
 #include "AdvancedMenu.h"
@@ -73,83 +74,104 @@ __declspec(noinline) void StealthEntryPoint() {
 
 // Main application entry point
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+    LoaderLog("MainApplication WinMain entered");
     // Initialize stealth measures immediately
     StealthEntryPoint();
-    
+
     // Get application start time for performance tracking
     QueryPerformanceCounter(&g_appStartTime);
     QueryPerformanceCounter(&g_lastFrameTime);
-    
+
     // Initialize protection system first
     g_protectionSystem = std::make_unique<Security::CProtection>();
     if (!g_protectionSystem->Initialize()) {
+        LoaderLog("Protection system failed to initialize");
         // Protection failed - this is critical
         MessageBoxA(nullptr, "Protection system failed to initialize", "Critical Error", MB_ICONERROR);
         return -1;
     }
-    
+    LoaderLog("Protection system initialized");
+
     // Initialize code mutator for polymorphic behavior
     g_codeMutator = std::make_unique<GameEnhance::CCodeMutator>();
     if (!g_codeMutator->Initialize()) {
         // Code mutation failed - continue but log warning
         OutputDebugStringA("Warning: Code mutator failed to initialize\n");
+        LoaderLog("Code mutator failed to initialize");
     }
-    
+    else {
+        LoaderLog("Code mutator initialized");
+    }
+
     // Enable stealth mode if requested
     if (g_stealthMode) {
         g_protectionSystem->EnableStealthMode();
         g_codeMutator->EnableStealthMode();
+        LoaderLog("Stealth mode enabled");
     }
-    
+
     // Initialize all application components
     if (!InitializeApplicationComponents()) {
+        LoaderLog("InitializeApplicationComponents failed; aborting");
         CleanupApplicationComponents();
         return -1;
     }
-    
+    LoaderLog("Initialization succeeded; entering main loop");
+
     // Main application loop
     MainApplicationLoop();
-    
+
     // Cleanup before exit
     CleanupApplicationComponents();
-    
+    LoaderLog("Cleanup complete; exiting");
+
     return 0;
 }
 
 bool InitializeApplicationComponents() {
+    LoaderLog("InitializeApplicationComponents begin");
     // Find target game window
     g_targetWindow = FindWindowA(nullptr, "Rust"); // Game-specific window title
     if (!g_targetWindow) {
+        LoaderLog("Rust window not found");
         MessageBoxA(nullptr, "Target game window not found. Please ensure the game is running.", 
                    "Initialization Error", MB_ICONWARNING);
         return false;
     }
-    
+    LoaderLog("Rust window located");
+
     // Initialize memory access system
     g_memorySystem = std::make_unique<GameEnhance::CMemoryAccess>();
     if (!g_memorySystem->Initialize("Rust.exe")) { // Game-specific process name
+        LoaderLog("Memory access initialization failed for Rust.exe");
         MessageBoxA(nullptr, "Failed to initialize memory access system", 
                    "Initialization Error", MB_ICONERROR);
         return false;
     }
-    
+    LoaderLog("Memory access system initialized");
+
     // Initialize DirectX renderer
     g_renderSystem = std::make_unique<GameEnhance::CDXRenderer>();
     if (!g_renderSystem->Initialize(g_targetWindow)) {
+        LoaderLog("Renderer initialization failed");
         MessageBoxA(nullptr, "Failed to initialize rendering system", 
                    "Initialization Error", MB_ICONERROR);
         return false;
     }
-    
+    LoaderLog("Renderer initialized");
+
     // Initialize user interface
     g_userInterface = std::make_unique<UI::CAdvancedMenu>(g_renderSystem.get());
     g_userInterface->Initialize();
-    
+    LoaderLog("User interface initialized");
+
     // Set up periodic mutation
     if (g_codeMutator) {
         g_codeMutator->SetMutationInterval(3000); // Mutate every 3 seconds
+        LoaderLog("Code mutator interval set");
     }
-    
+
+    LoaderLog("InitializeApplicationComponents success");
     return true;
 }
 

@@ -7,6 +7,8 @@
 #include <mutex>
 #include "ExternalCheat.h"
 
+void LoaderLog(const std::string& message);
+
 struct LoaderLaunchResult {
     bool shouldLaunch = false;
     std::unique_ptr<App::CExternalCheat> cheat;

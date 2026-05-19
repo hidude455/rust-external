@@ -11,11 +11,15 @@ namespace Security {
 
     CSecurityLayer::CSecurityLayer()
         : m_debuggerPresent(false), m_virtualMachine(false),
-          m_analysisTools(false), m_integrityOK(true) {}
+          m_analysisTools(false), m_integrityOK(true), m_vehHandle(nullptr) {}
 
     CSecurityLayer::~CSecurityLayer() { Shutdown(); }
 
     bool CSecurityLayer::Initialize() {
+        if (!m_vehHandle) {
+            m_vehHandle = AddVectoredExceptionHandler(1, VectoredExceptionHandler);
+        }
+
         RunSecurityChecks();
 
         if (m_debuggerPresent) {
@@ -25,7 +29,12 @@ namespace Security {
         return IsSecure();
     }
 
-    void CSecurityLayer::Shutdown() {}
+    void CSecurityLayer::Shutdown() {
+        if (m_vehHandle) {
+            RemoveVectoredExceptionHandler(m_vehHandle);
+            m_vehHandle = nullptr;
+        }
+    }
 
     void CSecurityLayer::RunSecurityChecks() {
         m_debuggerPresent = CheckDebugger();
@@ -49,12 +58,18 @@ namespace Security {
             }
         }
 
-        // Check for debugger using debugbreak
-        __debugbreak();
-
+        // Check for debugger using debugbreak without crashing if VEH not yet registered
         DWORD64 tickCount = GetTickCount64();
+        bool breakpointHandled = true;
+        __try {
+            __debugbreak();
+        } __except (EXCEPTION_EXECUTE_HANDLER) {
+            breakpointHandled = false;
+            OutputDebugStringA("SecurityLayer::CheckDebugger - breakpoint exception caught before VEH\n");
+        }
+
         Sleep(100);
-        if (GetTickCount64() - tickCount > 150) return true;
+        if (breakpointHandled && (GetTickCount64() - tickCount > 150)) return true;
 
         return false;
     }

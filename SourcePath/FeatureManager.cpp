@@ -264,7 +264,7 @@ namespace Features {
             uint32_t prevColor=m_visualsCfg.skeletonColor;
             float prevThickness=m_visualsCfg.skeletonThickness;
             uint32_t targetColor=m_visualsCfg.highlightESP?m_visualsCfg.highlightESPColor:prevColor;
-            float targetThickness=std::max(prevThickness,2.5f);
+            float targetThickness=(std::max)(prevThickness,2.5f);
             m_visualsCfg.skeletonColor=targetColor;
             m_visualsCfg.skeletonThickness=targetThickness;
             RenderSkeleton(ctx,e,w,h);
@@ -303,7 +303,7 @@ namespace Features {
         Memory::Vector2 sp; if(m_memory->WorldToScreen(e.position,sp,w,h))return;
         float cx=(float)w/2,cy=(float)h/2,a=atan2f(e.position.x-m_memory->GetLocalPlayer().position.x,e.position.z-m_memory->GetLocalPlayer().position.z);
         float m=m_visualsCfg.offscreenDistance,ax=cx+cosf(a)*(cx-m),ay=cy+sinf(a)*(cy-m);
-        ax=std::max(m,std::min((float)w-m,ax)); ay=std::max(m,std::min((float)h-m,ay));
+        ax=(std::max)(m,(std::min)((float)w-m,ax)); ay=(std::max)(m,(std::min)((float)h-m,ay));
         float s=m_visualsCfg.offscreenSize; DrawTriangle(ctx,ax-s,ay-s,ax+s,ay-s,ax,ay+s,m_visualsCfg.offscreenColor,true);
     }
     void CFeatureManager::RenderHotbar(ID3D11DeviceContext* ctx, const Memory::GameEntity& e, int w, int h) {
@@ -637,7 +637,7 @@ namespace Features {
     }
 
     void CFeatureManager::DrawCornerBox(ID3D11DeviceContext* ctx, float x, float y, float w, float h, uint32_t c, float t, float cl) {
-        float cl2=std::min(cl,std::min(w,h)*0.5f);
+        float cl2=(std::min)(cl,(std::min)(w,h)*0.5f);
         DrawFilledRect(ctx,x,y,cl2,t,c);DrawFilledRect(ctx,x,y,t,cl2,c);
         DrawFilledRect(ctx,x+w-cl2,y,cl2,t,c);DrawFilledRect(ctx,x+w-t,y,t,cl2,c);
         DrawFilledRect(ctx,x+w-cl2,y+h-t,cl2,t,c);DrawFilledRect(ctx,x+w-t,y+h-cl2,t,cl2,c);
