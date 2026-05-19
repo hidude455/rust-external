@@ -2,6 +2,32 @@
 
 A sophisticated C++ utility implementing the MIT Method pipeline with advanced memory management, DirectX 11 rendering, and combat systems for game enhancement.
 
+## Quick Setup Guide
+
+1. **Install prerequisites** (links open in your browser):
+   - [Visual Studio 2022 Community](https://visualstudio.microsoft.com/vs/community/) &rarr; install the **Desktop development with C++** workload (includes MSVC, Windows 10 SDK, and DirectX runtime components).
+   - [Microsoft Visual C++ Redistributable for VS 2015-2022 (x64)](https://aka.ms/vs/17/release/vc_redist.x64.exe) &rarr; required by the compiled executable on end-user machines.
+   - [DirectX End-User Runtime (June 2010)](https://www.microsoft.com/en-us/download/details.aspx?id=35) &rarr; ensures legacy DirectX components referenced by the loader are present.
+   - Optional but recommended: [Git for Windows](https://git-scm.com/download/win) for cloning and keeping the repository up to date.
+
+2. **Clone the repository**
+   ```powershell
+   git clone https://github.com/hidude455/rust-external.git
+   cd rust-external
+   ```
+
+3. **Build**
+   - Double-click `build_final.bat` (or run it from a Developer PowerShell prompt). The script invokes MSBuild in **Release | x64** and places the binary in `SourcePath\bin\x64\Release\MITMethod_Enhanced.exe`.
+
+4. **Run**
+   - Launch Rust first, then execute the built loader (use `Start-Process` in PowerShell if you need elevation).
+   - Diagnostics are written to `%TEMP%\RustExternal\loader_debug.log`; inspect this file if the window fails to appear.
+
+5. **Troubleshooting**
+   - If Visual Studio reports missing components, rerun the Visual Studio Installer and ensure **Desktop development with C++** is checked.
+   - Install the VC++ redistributable on any system that will run the compiled executable but does not have Visual Studio.
+   - When DirectX initialization fails, reinstall the DirectX End-User Runtime and update GPU drivers.
+
 ## Features
 
 ### Core Architecture
