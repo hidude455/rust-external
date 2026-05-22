@@ -133,6 +133,12 @@ namespace GameEnhance {
         // Protection settings
         bool enableProtection = true;
         bool stealthMode = true;
+        
+        // Driver configuration
+        bool enableKernelDriver = true;
+        std::string driverPath = "";  // Empty for default IntelPT path
+        std::string driverName = "IntelPT";
+        bool enableUserModeFallback = true;
     };
     
     // Utility functions

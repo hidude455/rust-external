@@ -16,6 +16,15 @@
 
 namespace KernelInterface {
     
+    // Driver type enumeration
+    enum class DriverType {
+        NONE = 0,
+        INTELPT = 1,
+        KDMAPPER = 2,
+        CUSTOM = 3,
+        USER_MODE_FALLBACK = 99
+    };
+    
     // Kernel driver communication codes
     enum class DriverCode {
         INIT_DRIVER = 0x800,
@@ -65,6 +74,35 @@ namespace KernelInterface {
         FILE_HIDE = 7,                // Hide files on disk
         NETWORK_HIDE = 8,              // Hide network connections
         FULL_STEALTH = 9              // Complete stealth mode
+    };
+    
+    // Driver capability flags
+    struct DriverCapabilities {
+        bool memoryRead : 1;
+        bool memoryWrite : 1;
+        bool memoryProtect : 1;
+        bool processHide : 1;
+        bool threadHide : 1;
+        bool moduleHide : 1;
+        bool hardwareSpoof : 1;
+        bool functionHook : 1;
+        bool patternScan : 1;
+        bool dllInject : 1;
+        bool protectionBypass : 1;
+        bool systemInfo : 1;
+        
+        DriverCapabilities() : memoryRead(false), memoryWrite(false), memoryProtect(false),
+                              processHide(false), threadHide(false), moduleHide(false),
+                              hardwareSpoof(false), functionHook(false), patternScan(false),
+                              dllInject(false), protectionBypass(false), systemInfo(false) {}
+    };
+    
+    // IOCTL code mapping for different drivers
+    struct IOCTLMapping {
+        DriverCode driverCode;
+        uint32_t intelptIOCTL;
+        uint32_t kdmapperIOCTL;
+        uint32_t customIOCTL;
     };
     
     // Kernel communication structure
@@ -132,6 +170,7 @@ namespace KernelInterface {
         uint8_t hookBytes[16];
         bool isActive;
         uint32_t hookType;
+        void* trampoline;
     };
     
     class CKernelInterface {
@@ -141,6 +180,12 @@ namespace KernelInterface {
         std::string m_driverName;
         std::string m_devicePath;
         bool m_driverLoaded;
+        DriverType m_driverType;
+        DriverCapabilities m_capabilities;
+        
+        // IOCTL mapping table
+        static const IOCTLMapping s_ioctlMappings[];
+        static const size_t s_ioctlMappingCount;
         
         // Communication buffers
         std::unique_ptr<KernelRequest> m_requestBuffer;
@@ -165,10 +210,16 @@ namespace KernelInterface {
         
         // Private methods
         bool LoadDriver();
+        bool LoadDriverViaService();
+        bool LoadDriverViaMapping();
         bool UnloadDriver();
         bool InitializeDriver();
         bool SendKernelRequest(const KernelRequest& request, KernelResponse& response);
         bool IsDriverResponding();
+        bool CheckDriverHealth();
+        uint32_t MapDriverCodeToIOCTL(DriverCode code);
+        bool DetectDriverCapabilities();
+        bool IsOperationSupported(DriverCode code) const;
         
         // Memory operations
         bool KernelReadMemory(uint32_t processId, uint64_t address, void* buffer, size_t size);
@@ -179,6 +230,13 @@ namespace KernelInterface {
         bool HideProcessDKOM(uint32_t processId);
         bool UnlinkEPROCESS(uint32_t processId);
         bool HideThread(uint32_t threadId);
+        
+        // User-mode fallbacks for unsupported operations
+        bool HideProcessUserMode(uint32_t processId, HidingMethod method);
+        bool SpoofDiskUserMode();
+        bool SpoofMACUserMode();
+        bool SpoofCPUUserMode();
+        bool HookFunctionUserMode(const char* functionName, void* hookFunction, FunctionHook& hook);
         bool HideModule(uint32_t processId, const char* moduleName);
         
         // Function hooking
@@ -288,11 +346,20 @@ namespace KernelInterface {
         std::vector<std::string> GetHookedFunctions() const;
         bool IsSystemCompromised() const;
         
+        // Driver validation
+        bool ValidateDriver();
+        std::string GetDriverInfo() const;
+        
         // Configuration
         void SetDriverPath(const std::string& path);
         const std::string& GetDriverPath() const;
         void SetStealthLevel(int level);
         int GetStealthLevel() const;
+        
+        // Driver capability queries
+        const DriverCapabilities& GetCapabilities() const { return m_capabilities; }
+        DriverType GetDriverType() const { return m_driverType; }
+        bool HasCapability(DriverCode code) const;
     };
     
 } // namespace KernelInterface

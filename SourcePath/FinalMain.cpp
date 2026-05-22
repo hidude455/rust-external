@@ -973,9 +973,32 @@ bool InitializeKernelInterface() {
     
     g_kernelInterface = std::make_unique<KernelInterface::CKernelInterface>();
     
-    // Initialize with custom driver path
-    std::string driverPath = "C:\\Windows\\System32\\drivers\\rust_kernel.sys";
-    return g_kernelInterface->Initialize(driverPath);
+    // Initialize with IntelPT driver (default) or custom path
+    std::string driverPath = ""; // Empty to use default IntelPT path
+    if (!g_kernelInterface->Initialize(driverPath)) {
+        LogSystemEvent("Failed to initialize kernel interface", true);
+        return false;
+    }
+    
+    LogSystemEvent("Kernel interface initialized successfully");
+    
+    // Validate driver
+    if (g_kernelInterface->IsDriverLoaded()) {
+        if (!g_kernelInterface->ValidateDriver()) {
+            LogSystemEvent("Driver validation failed", true);
+            // Continue anyway, may still work with user-mode fallbacks
+        } else {
+            LogSystemEvent("Driver validation passed");
+        }
+        
+        // Log driver information
+        std::string driverInfo = g_kernelInterface->GetDriverInfo();
+        LogSystemEvent("Driver info: " + driverInfo);
+    } else {
+        LogSystemEvent("No driver loaded, using user-mode fallbacks");
+    }
+    
+    return true;
 }
 
 bool InitializeNetworkBypass() {
