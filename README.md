@@ -10,6 +10,12 @@ A sophisticated C++ utility implementing the MIT Method pipeline with advanced m
    - [DirectX End-User Runtime (June 2010)](https://www.microsoft.com/en-us/download/details.aspx?id=35) &rarr; ensures legacy DirectX components referenced by the loader are present.
    - Optional but recommended: [Git for Windows](https://git-scm.com/download/win) for cloning and keeping the repository up to date.
 
+2. **Kernel Driver Setup (Optional)**
+   - For advanced features, install a kernel driver. See [DRIVER_SETUP.md](SourcePath/DRIVER_SETUP.md) for detailed instructions.
+   - **IntelPT Driver** (recommended): [GitHub Repository](https://github.com/intelpt/WindowsIntelPT)
+   - **KDMapper** (for manual mapping): [GitHub Repository](https://github.com/TheCruZ/kdmapper)
+   - The system automatically falls back to user-mode operations if no driver is available.
+
 2. **Clone the repository**
    ```powershell
    git clone https://github.com/hidude455/rust-external.git
@@ -32,9 +38,18 @@ A sophisticated C++ utility implementing the MIT Method pipeline with advanced m
 
 ### Core Architecture
 - **Low-latency Memory Management**: Win32 API-based process attachment and address translation
+- **Kernel Driver Integration**: IntelPT driver support with automatic user-mode fallbacks
 - **Junk Code Generation**: Binary signature obfuscation and entry-point protection
 - **Exception Logging**: Comprehensive logging system with timestamped entries
 - **C++20 Standards**: Modern C++ implementation with improved memory safety
+
+### Kernel Driver Capabilities
+- **Memory Operations**: Read/write via kernel driver for enhanced performance
+- **Process Hiding**: User-mode fallbacks for thread priority and registry-based hiding
+- **Hardware Spoofing**: Registry-based spoofing for disk, CPU, and MAC addresses
+- **Function Hooking**: Inline hooks with proper x64 jump offset calculation
+- **Driver Validation**: Health checking and capability detection
+- **Automatic Fallback**: Seamless transition to user-mode when driver unavailable
 
 ### Visual & UI System
 - **DirectX 11 Overlay**: High-performance rendering with frame-limiting
@@ -58,13 +73,16 @@ rust/
 │   ├── MITMethod.vcxproj      # Project file
 │   ├── main.cpp               # Application entry point
 │   ├── Common.h               # Shared definitions
+│   ├── Core.h                 # Core system definitions and config
+│   ├── KernelInterface.h/.cpp # Kernel driver integration
 │   ├── MemoryManager.h/.cpp   # Memory management system
 │   ├── Renderer.h/.cpp        # DirectX 11 renderer
 │   ├── Menu.h/.cpp            # ImGui menu system
 │   ├── ESP.h/.cpp             # ESP rendering system
 │   ├── Combat.h/.cpp          # Combat and prediction
 │   ├── Logger.h/.cpp          # Logging system
-│   └── JunkCode.h/.cpp        # Code obfuscation
+│   ├── JunkCode.h/.cpp        # Code obfuscation
+│   └── DRIVER_SETUP.md        # Kernel driver setup guide
 ├── MenuPath/                  # UI resources
 │   └── imgui/                 # ImGui library
 └── Logs/                      # Application logs
@@ -221,8 +239,20 @@ The `Combat` class provides:
    - Disable unnecessary visual effects
    - Optimize entity filtering
 
+5. **Kernel Driver Not Loading**
+   - Check [DRIVER_SETUP.md](SourcePath/DRIVER_SETUP.md) for installation instructions
+   - Verify IntelPT is installed: `sc query IntelPT`
+   - Run as Administrator
+   - System will automatically use user-mode fallbacks if driver unavailable
+   - Check logs for "using user-mode fallback" messages
+
 ### Logging
 All application events are logged to `Logs/MITMethod_YYYYMMDD_HHMMSS.log` with timestamps and severity levels.
+
+### Kernel Driver Resources
+- **IntelPT Driver**: https://github.com/intelpt/WindowsIntelPT
+- **KDMapper**: https://github.com/TheCruZ/kdmapper
+- **Setup Guide**: See [DRIVER_SETUP.md](SourcePath/DRIVER_SETUP.md) for complete installation and configuration instructions
 
 ## Development Notes
 
