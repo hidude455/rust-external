@@ -153,7 +153,7 @@ echo ========================================
 echo BUILD COMPLETE
 echo ========================================
 echo.
-echo Executable: bin\x64\Release\DownloadGUI.exe
+echo Executable: bin\DownloadGUI\x64\Release\DownloadGUI.exe
 echo.
 if exist "installer_output\PClient-Setup-1.0.0.exe" (
     echo Installer: installer_output\PClient-Setup-1.0.0.exe

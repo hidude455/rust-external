@@ -28,6 +28,10 @@ private:
     void RenderUI();
     void ApplyPurpleTheme();
     void SetupDownloadQueue();
+    bool CheckVisualStudioInstalled();
+    void ShowVisualStudioWarning();
+    bool CheckDirectXInstalled();
+    void ExecuteInstaller(const std::string& installerPath);
     
     static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -49,4 +53,16 @@ private:
     std::string m_statusMessage;
     bool m_autoStart;
     bool m_downloadComplete;
+    
+    // Animation State
+    float m_animationTime;
+    float m_pulseIntensity;
+    float m_rotationAngle;
+    std::vector<std::string> m_logMessages;
+    int m_maxLogMessages;
+    
+    // Installation State
+    bool m_installingDependencies;
+    std::vector<std::string> m_installQueue;
+    bool m_isInstaller;
 };
