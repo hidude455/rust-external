@@ -19,7 +19,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
@@ -28,7 +28,7 @@
     <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -76,17 +76,17 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)\..\MenuPath;$(ProjectDir)\..\MenuPath\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)\..\MenuPath;$(ProjectDir)\..\MenuPath\imgui;$(ProjectDir)\..\external\curl\include;$(ProjectDir)\..\external\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <FunctionLevelLinking>true</FunctionLevelLinking>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxgi.lib;user32.lib;gdi32.lib;kernel32.lib;psapi.lib;setupapi.lib;wbemuuid.lib;iphlpapi.lib;netapi32.lib;advapi32.lib;shlwapi.lib;shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxgi.lib;user32.lib;gdi32.lib;kernel32.lib;psapi.lib;setupapi.lib;wbemuuid.lib;iphlpapi.lib;netapi32.lib;advapi32.lib;shlwapi.lib;shell32.lib;libcurl.lib;libssl.lib;libcrypto.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)\libs;$(ProjectDir)\..\external\curl\lib;$(ProjectDir)\..\external\openssl\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TreatLinkerWarningAsErrors>false</TreatLinkerWarningAsErrors>
     </Link>
   </ItemDefinitionGroup>
@@ -98,7 +98,7 @@
       <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)\..\MenuPath;$(ProjectDir)\..\MenuPath\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)\..\MenuPath;$(ProjectDir)\..\MenuPath\imgui;$(ProjectDir)\..\external\curl\include;$(ProjectDir)\..\external\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
@@ -116,11 +116,11 @@
       <WholeProgramOptimization>true</WholeProgramOptimization>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxgi.lib;user32.lib;gdi32.lib;kernel32.lib;psapi.lib;setupapi.lib;wbemuuid.lib;iphlpapi.lib;netapi32.lib;advapi32.lib;shlwapi.lib;shell32.lib;winmm.lib;ws2_32.lib;crypt32.lib;wininet.lib;urlmon.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxgi.lib;user32.lib;gdi32.lib;kernel32.lib;psapi.lib;setupapi.lib;wbemuuid.lib;iphlpapi.lib;netapi32.lib;advapi32.lib;shlwapi.lib;shell32.lib;winmm.lib;ws2_32.lib;crypt32.lib;wininet.lib;urlmon.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;libcurl.lib;libssl.lib;libcrypto.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)\libs;$(ProjectDir)\..\external\curl\lib;$(ProjectDir)\..\external\openssl\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TreatLinkerWarningAsErrors>false</TreatLinkerWarningAsErrors>
       <SetChecksum>true</SetChecksum>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
@@ -157,6 +157,28 @@
     <ClCompile Include="OverlayRenderer.cpp" />
     <ClCompile Include="SecurityLayer.cpp" />
     <ClCompile Include="AuthSystem.cpp" />
+    <ClCompile Include="AdvancedLogger.cpp" />
+    <ClCompile Include="BackupManager.cpp" />
+    <ClCompile Include="Combat.cpp" />
+    <ClCompile Include="ConfigurationManager.cpp" />
+    <ClCompile Include="ESP.cpp" />
+    <ClCompile Include="ESP_Fixed.cpp" />
+    <ClCompile Include="HardwareSpoofer.cpp" />
+    <ClCompile Include="JunkCode.cpp" />
+    <ClCompile Include="KernelInterface.cpp" />
+    <ClCompile Include="Loader.cpp" />
+    <ClCompile Include="Logger.cpp" />
+    <ClCompile Include="MemoryManager.cpp" />
+    <ClCompile Include="Menu.cpp" />
+    <ClCompile Include="NetworkBypass.cpp" />
+    <ClCompile Include="PluginManager.cpp" />
+    <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="RustAntiCheat.cpp" />
+    <ClCompile Include="RustFeatures.cpp" />
+    <ClCompile Include="StatisticsManager.cpp" />
+    <ClCompile Include="UpdateManager.cpp" />
+    <ClCompile Include="VPNManager.cpp" />
+    <ClCompile Include="DllMain.cpp" />
     <ClCompile Include="..\MenuPath\imgui\imgui.cpp" />
     <ClCompile Include="..\MenuPath\imgui\imgui_demo.cpp" />
     <ClCompile Include="..\MenuPath\imgui\imgui_draw.cpp" />
@@ -179,6 +201,52 @@
     <ClInclude Include="SpooferGUI.h" />
     <ClInclude Include="RustAntiCheatEvasion.h" />
     <ClInclude Include="AdvancedObfuscation.h" />
+    <ClInclude Include="AdvancedAntiDetection.h" />
+    <ClInclude Include="AdvancedAntiDetectionSystem.h" />
+    <ClInclude Include="AdvancedLogger.h" />
+    <ClInclude Include="AntiDebuggerSystem.h" />
+    <ClInclude Include="AuthSystem.h" />
+    <ClInclude Include="AutomatedTestingSuite.h" />
+    <ClInclude Include="BackupManager.h" />
+    <ClInclude Include="Combat.h" />
+    <ClInclude Include="Common.h" />
+    <ClInclude Include="CompatibilityTestingFramework.h" />
+    <ClInclude Include="ComprehensiveErrorHandler.h" />
+    <ClInclude Include="ConfigSystem.h" />
+    <ClInclude Include="ConfigurationManager.h" />
+    <ClInclude Include="DMAEngine.h" />
+    <ClInclude Include="DependencyInjectionSystem.h" />
+    <ClInclude Include="DynamicOffsetDetector.h" />
+    <ClInclude Include="ESP.h" />
+    <ClInclude Include="ExternalCheat.h" />
+    <ClInclude Include="FeatureManager.h" />
+    <ClInclude Include="GPUVendorDetector.h" />
+    <ClInclude Include="GameMemory.h" />
+    <ClInclude Include="HardwareSpoofer.h" />
+    <ClInclude Include="JunkCode.h" />
+    <ClInclude Include="KernelInterface.h" />
+    <ClInclude Include="Loader.h" />
+    <ClInclude Include="Logger.h" />
+    <ClInclude Include="MemoryManager.h" />
+    <ClInclude Include="Menu.h" />
+    <ClInclude Include="MenuManager.h" />
+    <ClInclude Include="MultithreadingSystem.h" />
+    <ClInclude Include="NetworkBypass.h" />
+    <ClInclude Include="OverlayRenderer.h" />
+    <ClInclude Include="PerformanceMonitoringSystem.h" />
+    <ClInclude Include="PluginManager.h" />
+    <ClInclude Include="ProfileManager.h" />
+    <ClInclude Include="Renderer.h" />
+    <ClInclude Include="RustAntiCheat.h" />
+    <ClInclude Include="RustFeatures.h" />
+    <ClInclude Include="SecureEncryption.h" />
+    <ClInclude Include="SecureFileOperations.h" />
+    <ClInclude Include="SecureNetworkManager.h" />
+    <ClInclude Include="SecurityLayer.h" />
+    <ClInclude Include="StatisticsManager.h" />
+    <ClInclude Include="ThreadSafeComponents.h" />
+    <ClInclude Include="UpdateManager.h" />
+    <ClInclude Include="VPNManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" />

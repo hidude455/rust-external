@@ -41,6 +41,12 @@ namespace Memory {
     void CGameMemory::Shutdown() {
         CloseProcess();
         m_attached = false;
+        m_pid = 0;
+        m_baseAddress = 0;
+        m_gameAssemblyBase = 0;
+        m_unityPlayerBase = 0;
+        m_offsetCache.clear();
+        m_gameData = {};
     }
 
     bool CGameMemory::OpenProcess() {
@@ -56,6 +62,16 @@ namespace Memory {
             CloseHandle(m_processHandle);
             m_processHandle = nullptr;
         }
+    }
+
+    bool CGameMemory::IsProcessAlive() const {
+        if (!m_pid) return false;
+        HANDLE hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, m_pid);
+        if (!hProcess) return false;
+        DWORD exitCode = 0;
+        bool alive = GetExitCodeProcess(hProcess, &exitCode) && exitCode == STILL_ACTIVE;
+        CloseHandle(hProcess);
+        return alive;
     }
 
     uint64_t CGameMemory::GetModuleBase(const std::string& moduleName) {

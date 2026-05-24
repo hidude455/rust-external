@@ -4,6 +4,16 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MITMethod", "SourcePath\MITMethod.vcxproj", "{12345678-1234-5678-9ABC-123456789ABC}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EnhancedProject", "SourcePath\EnhancedProject.vcxproj", "{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SpooferProject", "SourcePath\SpooferProject.vcxproj", "{B2C3D4E5-F6A7-8901-2345-67890ABCDEF}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DesktopClient", "SourcePath\DesktopClient.vcxproj", "{C3D4E5F6-A7B8-9012-3456-7890ABCDEF12}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RustInjector", "SourcePath\RustInjector.vcxproj", "{D4E5F6A7-B8C9-0123-4567-890ABCDEF345}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DownloadGUI", "SourcePath\DownloadGUI.vcxproj", "{E5F6A7B8-C9D0-1234-5678-90ABCDEF4567}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -14,6 +24,26 @@ Global
 		{12345678-1234-5678-9ABC-123456789ABC}.Debug|x64.Build.0 = Debug|x64
 		{12345678-1234-5678-9ABC-123456789ABC}.Release|x64.ActiveCfg = Release|x64
 		{12345678-1234-5678-9ABC-123456789ABC}.Release|x64.Build.0 = Release|x64
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|x64.ActiveCfg = Debug|x64
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|x64.Build.0 = Debug|x64
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|x64.ActiveCfg = Release|x64
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|x64.Build.0 = Release|x64
+		{B2C3D4E5-F6A7-8901-2345-67890ABCDEF}.Debug|x64.ActiveCfg = Debug|x64
+		{B2C3D4E5-F6A7-8901-2345-67890ABCDEF}.Debug|x64.Build.0 = Debug|x64
+		{B2C3D4E5-F6A7-8901-2345-67890ABCDEF}.Release|x64.ActiveCfg = Release|x64
+		{B2C3D4E5-F6A7-8901-2345-67890ABCDEF}.Release|x64.Build.0 = Release|x64
+		{C3D4E5F6-A7B8-9012-3456-7890ABCDEF12}.Debug|x64.ActiveCfg = Debug|x64
+		{C3D4E5F6-A7B8-9012-3456-7890ABCDEF12}.Debug|x64.Build.0 = Debug|x64
+		{C3D4E5F6-A7B8-9012-3456-7890ABCDEF12}.Release|x64.ActiveCfg = Release|x64
+		{C3D4E5F6-A7B8-9012-3456-7890ABCDEF12}.Release|x64.Build.0 = Release|x64
+		{D4E5F6A7-B8C9-0123-4567-890ABCDEF345}.Debug|x64.ActiveCfg = Debug|x64
+		{D4E5F6A7-B8C9-0123-4567-890ABCDEF345}.Debug|x64.Build.0 = Debug|x64
+		{D4E5F6A7-B8C9-0123-4567-890ABCDEF345}.Release|x64.ActiveCfg = Release|x64
+		{D4E5F6A7-B8C9-0123-4567-890ABCDEF345}.Release|x64.Build.0 = Release|x64
+		{E5F6A7B8-C9D0-1234-5678-90ABCDEF4567}.Debug|x64.ActiveCfg = Debug|x64
+		{E5F6A7B8-C9D0-1234-5678-90ABCDEF4567}.Debug|x64.Build.0 = Debug|x64
+		{E5F6A7B8-C9D0-1234-5678-90ABCDEF4567}.Release|x64.ActiveCfg = Release|x64
+		{E5F6A7B8-C9D0-1234-5678-90ABCDEF4567}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

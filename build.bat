@@ -87,7 +87,7 @@ if exist "obj" rmdir /s /q "obj"
 
 echo.
 echo Building Release configuration...
-"%MSBUILD_PATH%" "SourcePath\EnhancedProject.vcxproj" /p:Configuration=Release /p:Platform=x64 /m /v:minimal
+"%MSBUILD_PATH%" "MITMethod.sln" /p:Configuration=Release /p:Platform=x64 /m /v:minimal
 
 if errorlevel 1 (
     echo.

@@ -17,6 +17,13 @@ namespace App {
 
     class CExternalCheat {
     private:
+        enum class GameState {
+            Detached,
+            WaitingForGame,
+            Attaching,
+            Attached
+        };
+
         std::unique_ptr<Auth::CAuthSystem> m_auth;
         std::unique_ptr<Security::CSecurityLayer> m_security;
         std::unique_ptr<Memory::CGameMemory> m_memory;
@@ -33,6 +40,8 @@ namespace App {
         std::thread m_updateThread;
         std::atomic<bool> m_running;
         std::atomic<bool> m_authenticated;
+        std::atomic<GameState> m_gameState;
+        std::atomic<bool> m_shutdownRequested;
 
         bool InitializeAuth(const std::string& key);
         bool InitializeSecurity();
@@ -58,7 +67,9 @@ namespace App {
 
         bool IsRunning() const { return m_running; }
         bool IsAuthenticated() const { return m_authenticated; }
-        
+        bool IsWaitingForGame() const { return m_gameState.load() == GameState::WaitingForGame; }
+        bool IsAttachedToGame() const { return m_gameState.load() == GameState::Attached; }
+
         // Spoofer access
         Spoofer::CAdvancedSpoofer* GetSpoofer() const { return m_spoofer.get(); }
         SpooferGUI::CSpooferGUI* GetSpooferGUI() const { return m_spooferGUI.get(); }

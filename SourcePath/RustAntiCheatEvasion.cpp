@@ -122,16 +122,21 @@ namespace RustEvasion {
         // Kernel-level EAC bypass using driver
         if (!m_kernelDriverLoaded) return false;
         
-        // Send kernel commands to bypass EAC kernel modules
-        uint32_t command = 0x1000; // EAC bypass command
-        bool success = SendKernelCommand(command, nullptr, 0);
-        
-        if (success) {
-            m_detectionVectors[0].bypassed = true;
-            m_detectionVectors[0].method = "Kernel driver hiding";
+        // Check if driver supports kernel bypass operations
+        if (m_driverHandle != INVALID_HANDLE_VALUE) {
+            // Send kernel commands to bypass EAC kernel modules
+            uint32_t command = 0x1000; // EAC bypass command
+            bool success = SendKernelCommand(command, nullptr, 0);
+            
+            if (success) {
+                m_detectionVectors[0].bypassed = true;
+                m_detectionVectors[0].method = "Kernel driver hiding";
+            }
+            
+            return success;
         }
         
-        return success;
+        return false;
     }
 
     bool CRustAntiCheatEvasion::BypassEACUserMode() {

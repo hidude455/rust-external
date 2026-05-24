@@ -142,6 +142,7 @@ namespace Memory {
         bool Initialize();
         void Shutdown();
         bool IsAttached() const { return m_attached; }
+        bool IsProcessAlive() const;
 
         template<typename T>
         T Read(uint64_t address) {

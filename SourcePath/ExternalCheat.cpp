@@ -5,7 +5,8 @@
 namespace App {
 
     CExternalCheat::CExternalCheat()
-        : m_running(false), m_authenticated(false) {}
+        : m_running(false), m_authenticated(false),
+          m_gameState(GameState::Detached), m_shutdownRequested(false) {}
 
     CExternalCheat::~CExternalCheat() { Shutdown(); }
 
@@ -34,12 +35,14 @@ namespace App {
         std::cout << "[+] Security checks passed\n";
 
         m_memory = std::make_unique<Memory::CGameMemory>();
-        if (!m_memory->Initialize()) {
-            std::cout << "[!] Failed to attach to game. Make sure Rust is running.\n";
-            return false;
+        if (m_memory->Initialize()) {
+            m_gameState.store(GameState::Attached);
+            std::cout << "[+] Attached to Rust (PID: " << m_memory->GetPID() << ")\n";
+            std::cout << "[+] GameAssembly: 0x" << std::hex << m_memory->GetGameAssemblyBase() << std::dec << "\n";
+        } else {
+            m_gameState.store(GameState::WaitingForGame);
+            std::cout << "[!] RustClient.exe not detected. Waiting for game launch...\n";
         }
-        std::cout << "[+] Attached to Rust (PID: " << m_memory->GetPID() << ")\n";
-        std::cout << "[+] GameAssembly: 0x" << std::hex << m_memory->GetGameAssemblyBase() << std::dec << "\n";
 
         m_features = std::make_unique<Features::CFeatureManager>();
         if (!m_features->Initialize(m_memory.get())) {
@@ -97,6 +100,7 @@ namespace App {
         std::cout << "[+] Spoofer initialized\n";
         std::cout << "[+] Rust External ready!\n\n";
 
+        m_shutdownRequested.store(false);
         m_running = true;
         m_updateThread = std::thread(&CExternalCheat::UpdateLoop, this);
 
@@ -104,6 +108,7 @@ namespace App {
     }
 
     void CExternalCheat::Shutdown() {
+        m_shutdownRequested.store(true);
         m_running = false;
 
         if (m_updateThread.joinable()) {
@@ -124,6 +129,7 @@ namespace App {
         if (m_security) m_security->Shutdown();
 
         m_authenticated = false;
+        m_gameState.store(GameState::Detached);
         std::cout << "[*] Shutdown complete\n";
     }
 
@@ -134,11 +140,47 @@ namespace App {
     }
 
     void CExternalCheat::UpdateLoop() {
+        constexpr DWORD kRetryDelayMs = 2000;
+
         while (m_running) {
-            if (m_features) {
-                m_features->Update();
+            if (m_shutdownRequested.load()) {
+                break;
             }
-            Sleep(1);
+
+            GameState state = m_gameState.load();
+
+            if (state == GameState::WaitingForGame || state == GameState::Attaching) {
+                if (!m_memory) {
+                    Sleep(kRetryDelayMs);
+                    continue;
+                }
+
+                m_gameState.store(GameState::Attaching);
+                if (m_memory->Initialize()) {
+                    m_gameState.store(GameState::Attached);
+                    std::cout << "[+] Attached to Rust (PID: " << m_memory->GetPID() << ")\n";
+                    std::cout << "[+] GameAssembly: 0x" << std::hex << m_memory->GetGameAssemblyBase() << std::dec << "\n";
+                } else {
+                    m_gameState.store(GameState::WaitingForGame);
+                    Sleep(kRetryDelayMs);
+                    continue;
+                }
+            } else if (state == GameState::Attached) {
+                if (m_memory && (!m_memory->IsAttached() || !m_memory->IsProcessAlive())) {
+                    std::cout << "[!] Lost connection to Rust. Waiting for RustClient.exe...\n";
+                    m_memory->Shutdown();
+                    m_gameState.store(GameState::WaitingForGame);
+                    Sleep(kRetryDelayMs);
+                    continue;
+                }
+            }
+
+            if (m_features && m_memory && m_memory->IsAttached()) {
+                m_features->Update();
+                Sleep(1);
+            } else {
+                Sleep(200);
+            }
         }
     }
 

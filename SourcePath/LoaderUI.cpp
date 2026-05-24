@@ -441,20 +441,23 @@ void CLoaderUI::LaunchCheat() {
             return;
         }
 
-        m_progress.store(0.75f);
-        {
-            std::lock_guard<std::mutex> lock(m_stateMutex);
-            m_progressLabel = "Connecting to game";
-        }
+        bool attached = cheat->IsAttachedToGame();
+        bool waitingForGame = cheat->IsWaitingForGame();
 
-        m_cheat = std::move(cheat);
-        m_progress.store(1.0f);
+        m_progress.store(attached ? 1.0f : 0.9f);
         m_showProgress.store(false);
         {
             std::lock_guard<std::mutex> lock(m_stateMutex);
-            m_statusMessage = "Launching...";
-            m_progressLabel.clear();
+            if (waitingForGame && !attached) {
+                m_statusMessage = "Waiting for RustClient.exe...";
+                m_progressLabel.clear();
+            } else {
+                m_statusMessage = "Launching...";
+                m_progressLabel.clear();
+            }
         }
+
+        m_cheat = std::move(cheat);
         m_shouldLaunch.store(true);
         m_busy.store(false);
     }).detach();
