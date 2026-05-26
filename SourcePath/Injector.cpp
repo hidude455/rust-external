@@ -34,6 +34,11 @@ bool CInjector::EnableDebugPrivilege() {
 bool CInjector::FindProcess(const std::wstring& processName) {
     EnableDebugPrivilege();
 
+    if (m_processHandle && m_processHandle != INVALID_HANDLE_VALUE) {
+        CloseHandle(m_processHandle);
+        m_processHandle = nullptr;
+    }
+
     HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
     if (hSnapshot == INVALID_HANDLE_VALUE) {
         return false;
@@ -54,9 +59,16 @@ bool CInjector::FindProcess(const std::wstring& processName) {
         if (_wcsicmp(pe32.szExeFile, processName.c_str()) == 0) {
             m_processId = pe32.th32ProcessID;
             m_processName = pe32.szExeFile;
-            m_processFound = true;
-            
             m_processHandle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, m_processId);
+
+            if (!m_processHandle || m_processHandle == INVALID_HANDLE_VALUE) {
+                m_processHandle = nullptr;
+                m_processFound = false;
+                m_processId = 0;
+                m_processName.clear();
+            } else {
+                m_processFound = true;
+            }
             break;
         }
     } while (Process32NextW(hSnapshot, &pe32));

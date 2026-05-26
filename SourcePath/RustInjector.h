@@ -3,7 +3,13 @@
 #include <d3d11.h>
 #include <string>
 #include <memory>
+#include <vector>
 #include "Injector.h"
+#include "KernelInterface.h"
+#include "MemoryManager.h"
+#include "ESP.h"
+#include "Renderer.h"
+#include "RendererDX.h"
 #include "../MenuPath/imgui/imgui.h"
 
 class CRustInjector {
@@ -24,7 +30,13 @@ private:
     
     void RenderFrame();
     void RenderUI();
-    void ApplyPurpleTheme();
+    void RenderStatusTab();
+    void RenderDLLTab();
+    void RenderOptionsTab();
+    void RenderESPTab();
+    void RenderLogTab();
+    void ApplyDarkTheme();
+    void AppendLog(const std::string& message);
     
     static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -38,13 +50,31 @@ private:
     ID3D11RenderTargetView* m_renderTarget;
     
     std::unique_ptr<CInjector> m_injector;
+    std::unique_ptr<KernelInterface::CKernelInterface> m_kernelInterface;
+    std::unique_ptr<MemoryManager> m_memoryManager;
+    std::unique_ptr<Renderer> m_renderer;
+    std::unique_ptr<ESP> m_esp;
     bool m_running;
     bool m_initialized;
+    bool m_driverLoaded;
     
     // UI State
     char m_dllPath[MAX_PATH];
     bool m_autoInject;
     bool m_manualMap;
     std::string m_statusMessage;
-    ImVector<char> m_logMessages;
+    std::vector<std::string> m_logMessages;
+    
+    // Navigation State
+    int m_selectedTab;
+    float m_animationTimer;
+    
+    // ESP Settings
+    bool m_espEnabled;
+    bool m_espShowCircle;
+    bool m_espShowInventory;
+    bool m_espShowChams;
+    bool m_espGalaxyMode;
+    float m_espMaxDistance;
+    float m_espCircleRadius;
 };

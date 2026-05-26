@@ -26,6 +26,7 @@ namespace MIT {
         float frameTime;
         std::vector<float> fpsHistory;
         std::chrono::high_resolution_clock::time_point fpsTimer;
+        uint32_t framesSinceLastUpdate = 0;
         
         // ImGui specific
         void* imguiContext;

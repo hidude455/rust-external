@@ -1,6 +1,10 @@
 #include "RustInjector.h"
 #include <d3dcompiler.h>
 #include <fstream>
+#include <sstream>
+#include <chrono>
+#include <iomanip>
+#include <cstring>
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")
@@ -14,10 +18,24 @@ CRustInjector::CRustInjector()
     , m_swapChain(nullptr)
     , m_renderTarget(nullptr)
     , m_injector(std::make_unique<CInjector>())
+    , m_kernelInterface(std::make_unique<KernelInterface::CKernelInterface>())
+    , m_memoryManager(nullptr)
+    , m_renderer(nullptr)
+    , m_esp(nullptr)
     , m_running(false)
     , m_initialized(false)
+    , m_driverLoaded(false)
     , m_autoInject(false)
     , m_manualMap(false)
+    , m_selectedTab(0)
+    , m_animationTimer(0.0f)
+    , m_espEnabled(true)
+    , m_espShowCircle(true)
+    , m_espShowInventory(true)
+    , m_espShowChams(true)
+    , m_espGalaxyMode(false)
+    , m_espMaxDistance(500.0f)
+    , m_espCircleRadius(30.0f)
 {
     strcpy_s(m_dllPath, "EnhancedProject.dll");
     m_statusMessage = "Ready - Waiting for Rust process...";
@@ -66,6 +84,27 @@ bool CRustInjector::Initialize(HINSTANCE hInstance) {
         return false;
     }
     
+    // Initialize kernel driver
+    if (m_kernelInterface->Initialize("")) {
+        m_driverLoaded = true;
+        AppendLog("IntelPT driver loaded successfully");
+        m_statusMessage = "Driver loaded - Ready for injection";
+    } else {
+        m_driverLoaded = false;
+        AppendLog("IntelPT driver not found - using user-mode fallback");
+        m_statusMessage = "No driver - User-mode fallback active";
+    }
+    
+    // Initialize memory manager
+    m_memoryManager = std::make_unique<MemoryManager>(m_kernelInterface.get());
+    
+    // Initialize renderer
+    m_renderer = std::make_unique<Renderer>(m_device, m_context);
+    
+    // Initialize ESP system
+    m_esp = std::make_unique<ESP>(m_memoryManager.get(), m_renderer.get());
+    m_esp->Initialize();
+    
     ShowWindow(m_hwnd, SW_SHOW);
     UpdateWindow(m_hwnd);
     
@@ -113,7 +152,14 @@ bool CRustInjector::InitializeImGui() {
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     
-    ApplyPurpleTheme();
+    // Load anti-aliased font
+    ImFontConfig fontConfig;
+    fontConfig.OversampleH = 2;
+    fontConfig.OversampleV = 2;
+    fontConfig.PixelSnapH = false;
+    io.Fonts->AddFontFromFileTTF("MenuPath/imgui/misc/fonts/Roboto-Medium.ttf", 16.0f, &fontConfig);
+    
+    ApplyDarkTheme();
     
     ImGui_ImplWin32_Init(m_hwnd);
     ImGui_ImplDX11_Init(m_device, m_context);
@@ -121,52 +167,108 @@ bool CRustInjector::InitializeImGui() {
     return true;
 }
 
-void CRustInjector::ApplyPurpleTheme() {
+void CRustInjector::ApplyDarkTheme() {
     ImGuiStyle& style = ImGui::GetStyle();
     
-    ImVec4 purple = ImVec4(0.5f, 0.0f, 0.5f, 1.0f);
-    ImVec4 darkBg = ImVec4(0.1f, 0.1f, 0.15f, 1.0f);
-    ImVec4 lightBg = ImVec4(0.2f, 0.2f, 0.25f, 1.0f);
+    // Dark background colors
+    ImVec4 darkBg = ImVec4(0.08f, 0.08f, 0.1f, 1.0f);
+    ImVec4 darkerBg = ImVec4(0.05f, 0.05f, 0.07f, 1.0f);
+    ImVec4 cardBg = ImVec4(0.12f, 0.12f, 0.15f, 1.0f);
     
-    style.WindowPadding = ImVec2(15, 15);
-    style.WindowRounding = 8.0f;
-    style.FramePadding = ImVec2(5, 5);
-    style.ItemSpacing = ImVec2(10, 10);
-    style.ItemInnerSpacing = ImVec2(5, 5);
-    style.IndentSpacing = 25.0f;
-    style.ScrollbarSize = 12.0f;
+    // Red accent colors
+    ImVec4 redAccent = ImVec4(0.85f, 0.15f, 0.15f, 1.0f);
+    ImVec4 redHover = ImVec4(0.95f, 0.25f, 0.25f, 1.0f);
+    ImVec4 redActive = ImVec4(0.75f, 0.05f, 0.05f, 1.0f);
+    
+    // Text colors
+    ImVec4 textMain = ImVec4(0.95f, 0.95f, 0.95f, 1.0f);
+    ImVec4 textDim = ImVec4(0.6f, 0.6f, 0.65f, 1.0f);
+    
+    // Rounded corners for modern look
+    style.WindowRounding = 12.0f;
+    style.ChildRounding = 8.0f;
+    style.FrameRounding = 6.0f;
+    style.PopupRounding = 8.0f;
     style.ScrollbarRounding = 8.0f;
-    style.GrabMinSize = 8.0f;
     style.GrabRounding = 4.0f;
+    style.TabRounding = 6.0f;
     
+    // Spacing
+    style.WindowPadding = ImVec2(12, 12);
+    style.FramePadding = ImVec2(10, 8);
+    style.ItemSpacing = ImVec2(12, 8);
+    style.ItemInnerSpacing = ImVec2(8, 4);
+    style.IndentSpacing = 25.0f;
+    style.ScrollbarSize = 10.0f;
+    style.GrabMinSize = 10.0f;
+    
+    // Window colors
     style.Colors[ImGuiCol_WindowBg] = darkBg;
-    style.Colors[ImGuiCol_ChildBg] = ImVec4(0.08f, 0.08f, 0.12f, 1.0f);
-    style.Colors[ImGuiCol_PopupBg] = ImVec4(0.15f, 0.15f, 0.2f, 1.0f);
-    style.Colors[ImGuiCol_Border] = purple;
-    style.Colors[ImGuiCol_FrameBg] = lightBg;
-    style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.3f, 0.3f, 0.4f, 1.0f);
-    style.Colors[ImGuiCol_FrameBgActive] = purple;
-    style.Colors[ImGuiCol_TitleBg] = purple;
-    style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.6f, 0.0f, 0.6f, 1.0f);
-    style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.15f, 0.15f, 0.2f, 1.0f);
-    style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.08f, 0.08f, 0.12f, 1.0f);
-    style.Colors[ImGuiCol_ScrollbarGrab] = purple;
-    style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.6f, 0.0f, 0.6f, 1.0f);
-    style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.7f, 0.0f, 0.7f, 1.0f);
-    style.Colors[ImGuiCol_CheckMark] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-    style.Colors[ImGuiCol_SliderGrab] = purple;
-    style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.6f, 0.0f, 0.6f, 1.0f);
-    style.Colors[ImGuiCol_Button] = purple;
-    style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.6f, 0.0f, 0.6f, 1.0f);
-    style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.7f, 0.0f, 0.7f, 1.0f);
-    style.Colors[ImGuiCol_Header] = purple;
-    style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.6f, 0.0f, 0.6f, 1.0f);
-    style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.7f, 0.0f, 0.7f, 1.0f);
-    style.Colors[ImGuiCol_ResizeGrip] = purple;
-    style.Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.6f, 0.0f, 0.6f, 1.0f);
-    style.Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.7f, 0.0f, 0.7f, 1.0f);
-    style.Colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-    style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
+    style.Colors[ImGuiCol_ChildBg] = cardBg;
+    style.Colors[ImGuiCol_PopupBg] = darkerBg;
+    style.Colors[ImGuiCol_Border] = ImVec4(0.2f, 0.2f, 0.25f, 1.0f);
+    style.Colors[ImGuiCol_BorderShadow] = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
+    
+    // Frame colors
+    style.Colors[ImGuiCol_FrameBg] = darkerBg;
+    style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.15f, 0.15f, 0.18f, 1.0f);
+    style.Colors[ImGuiCol_FrameBgActive] = redAccent;
+    
+    // Title bar
+    style.Colors[ImGuiCol_TitleBg] = darkerBg;
+    style.Colors[ImGuiCol_TitleBgActive] = darkerBg;
+    style.Colors[ImGuiCol_TitleBgCollapsed] = darkerBg;
+    
+    // Menu bar
+    style.Colors[ImGuiCol_MenuBarBg] = darkerBg;
+    
+    // Scrollbar
+    style.Colors[ImGuiCol_ScrollbarBg] = darkerBg;
+    style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.25f, 0.25f, 0.3f, 1.0f);
+    style.Colors[ImGuiCol_ScrollbarGrabHovered] = redAccent;
+    style.Colors[ImGuiCol_ScrollbarGrabActive] = redActive;
+    
+    // Check mark
+    style.Colors[ImGuiCol_CheckMark] = redAccent;
+    
+    // Slider
+    style.Colors[ImGuiCol_SliderGrab] = redAccent;
+    style.Colors[ImGuiCol_SliderGrabActive] = redActive;
+    
+    // Button
+    style.Colors[ImGuiCol_Button] = redAccent;
+    style.Colors[ImGuiCol_ButtonHovered] = redHover;
+    style.Colors[ImGuiCol_ButtonActive] = redActive;
+    
+    // Header
+    style.Colors[ImGuiCol_Header] = darkerBg;
+    style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.15f, 0.15f, 0.18f, 1.0f);
+    style.Colors[ImGuiCol_HeaderActive] = redAccent;
+    
+    // Selection
+    style.Colors[ImGuiCol_Separator] = ImVec4(0.15f, 0.15f, 0.18f, 1.0f);
+    style.Colors[ImGuiCol_SeparatorHovered] = ImVec4(0.25f, 0.25f, 0.3f, 1.0f);
+    style.Colors[ImGuiCol_SeparatorActive] = redAccent;
+    
+    // Resize grip
+    style.Colors[ImGuiCol_ResizeGrip] = ImVec4(0.2f, 0.2f, 0.25f, 1.0f);
+    style.Colors[ImGuiCol_ResizeGripHovered] = redAccent;
+    style.Colors[ImGuiCol_ResizeGripActive] = redActive;
+    
+    // Text
+    style.Colors[ImGuiCol_Text] = textMain;
+    style.Colors[ImGuiCol_TextDisabled] = textDim;
+    
+    // Tab
+    style.Colors[ImGuiCol_Tab] = darkerBg;
+    style.Colors[ImGuiCol_TabHovered] = ImVec4(0.15f, 0.15f, 0.18f, 1.0f);
+    style.Colors[ImGuiCol_TabActive] = redAccent;
+    style.Colors[ImGuiCol_TabUnfocused] = darkerBg;
+    style.Colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.15f, 0.15f, 0.18f, 1.0f);
+    
+    // Docking
+    style.Colors[ImGuiCol_DockingPreview] = redAccent;
+    style.Colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
 void CRustInjector::CleanupDirectX() {
@@ -203,6 +305,23 @@ void CRustInjector::RenderFrame() {
     
     RenderUI();
     
+    // Update and render ESP
+    if (m_esp && m_espEnabled) {
+        // Sync GUI settings to ESP config
+        MIT::ESPConfig espConfig = m_esp->GetConfig();
+        espConfig.enabled = m_espEnabled;
+        espConfig.showCircleESP = m_espShowCircle;
+        espConfig.showInventory = m_espShowInventory;
+        espConfig.showWeaponChams = m_espShowChams;
+        espConfig.galaxyMode = m_espGalaxyMode;
+        espConfig.maxDistance = m_espMaxDistance;
+        espConfig.circleRadius = m_espCircleRadius;
+        m_esp->SetConfig(espConfig);
+        
+        m_esp->Update();
+        m_esp->Render();
+    }
+    
     ImGui::Render();
     
     float clearColor[4] = { 0.1f, 0.1f, 0.15f, 1.0f };
@@ -216,46 +335,164 @@ void CRustInjector::RenderFrame() {
 
 void CRustInjector::RenderUI() {
     ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(900, 650), ImGuiCond_FirstUseEver);
     
-    ImGui::Begin("P Client - Rust Injector", nullptr, ImGuiWindowFlags_MenuBar);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+    ImGui::Begin("P Client - Rust Injector", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_MenuBar);
+    ImGui::PopStyleVar();
     
+    // Menu bar
     if (ImGui::BeginMenuBar()) {
-        if (ImGui::BeginMenu("File")) {
-            if (ImGui::MenuItem("Exit")) {
-                m_running = false;
-            }
-            ImGui::EndMenu();
-        }
-        if (ImGui::BeginMenu("Help")) {
-            if (ImGui::MenuItem("About")) {
-                m_statusMessage = "P Client v1.0 - Rust Injector";
-            }
-            ImGui::EndMenu();
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.85f, 0.15f, 0.15f, 1.0f));
+        ImGui::Text("cheatstore.net");
+        ImGui::PopStyleColor();
+        ImGui::SameLine(0, 20);
+        ImGui::Text("Injector");
+        ImGui::SameLine(0, 400);
+        if (ImGui::MenuItem("Exit")) {
+            m_running = false;
         }
         ImGui::EndMenuBar();
     }
     
-    ImGui::Spacing();
+    // Main content area with sidebar
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+    ImGui::BeginChild("MainContent", ImVec2(0, 0), false);
+    ImGui::PopStyleVar();
     
-    // Status Section
-    ImGui::SeparatorText("Status");
-    ImGui::Text("Status: %s", m_statusMessage.c_str());
+    // Sidebar
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12, 12));
+    ImGui::BeginChild("Sidebar", ImVec2(180, 0), true);
+    ImGui::PopStyleVar();
     
-    if (m_injector->IsProcessFound()) {
-        ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Rust Found: %ls (PID: %d)", 
-            m_injector->GetProcessName().c_str(), m_injector->GetProcessId());
-    } else {
-        ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "Rust Not Found - Waiting for game to launch...");
+    const char* tabs[] = { "Status", "DLL", "Options", "ESP", "Log" };
+    for (int i = 0; i < 5; i++) {
+        bool isSelected = (m_selectedTab == i);
+        
+        if (isSelected) {
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.85f, 0.15f, 0.15f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.95f, 0.25f, 0.25f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.75f, 0.05f, 0.05f, 1.0f));
+        } else {
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.05f, 0.05f, 0.07f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.15f, 0.15f, 0.18f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.85f, 0.15f, 0.15f, 1.0f));
+        }
+        
+        if (ImGui::Button(tabs[i], ImVec2(156, 40))) {
+            m_selectedTab = i;
+            m_animationTimer = 0.0f;
+        }
+        
+        ImGui::PopStyleColor(3);
+        ImGui::Spacing();
     }
     
-    ImGui::Spacing();
-    ImGui::Separator();
+    ImGui::EndChild();
     
-    // DLL Selection
-    ImGui::SeparatorText("DLL Selection");
-    ImGui::InputText("DLL Path", m_dllPath, MAX_PATH);
-    if (ImGui::Button("Browse...")) {
+    ImGui::SameLine();
+    
+    // Content area
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(20, 20));
+    ImGui::BeginChild("Content", ImVec2(0, 0), true);
+    ImGui::PopStyleVar();
+    
+    // Render selected tab content
+    switch (m_selectedTab) {
+        case 0: RenderStatusTab(); break;
+        case 1: RenderDLLTab(); break;
+        case 2: RenderOptionsTab(); break;
+        case 3: RenderESPTab(); break;
+        case 4: RenderLogTab(); break;
+    }
+    
+    ImGui::EndChild();
+    
+    ImGui::EndChild();
+    ImGui::End();
+}
+
+void CRustInjector::RenderStatusTab() {
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.85f, 0.15f, 0.15f, 1.0f));
+    ImGui::Text("Status");
+    ImGui::PopStyleColor();
+    ImGui::Spacing();
+    
+    // Status card
+    ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 8.0f);
+    ImGui::BeginChild("StatusCard", ImVec2(0, 100), true);
+    ImGui::PopStyleVar();
+    
+    ImGui::Text("Current Status:");
+    ImGui::Spacing();
+    
+    if (m_injector->IsProcessFound()) {
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.2f, 0.8f, 0.2f, 1.0f));
+        ImGui::Text("Rust Found: %ls (PID: %d)", 
+            m_injector->GetProcessName().c_str(), m_injector->GetProcessId());
+        ImGui::PopStyleColor();
+    } else {
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.6f, 0.2f, 1.0f));
+        ImGui::Text("Rust Not Found - Waiting for game to launch...");
+        ImGui::PopStyleColor();
+    }
+    
+    ImGui::EndChild();
+    ImGui::Spacing();
+    
+    // Inject button
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.85f, 0.15f, 0.15f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.95f, 0.25f, 0.25f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.75f, 0.05f, 0.05f, 1.0f));
+    if (ImGui::Button("Inject DLL", ImVec2(200, 45))) {
+        int wideLen = MultiByteToWideChar(CP_UTF8, 0, m_dllPath, -1, nullptr, 0);
+        if (wideLen <= 1) {
+            m_statusMessage = "Invalid DLL path";
+            AppendLog("[ERROR] Provided DLL path is empty or invalid");
+        } else {
+            std::wstring dllPathW(static_cast<size_t>(wideLen - 1), L'\0');
+            MultiByteToWideChar(CP_UTF8, 0, m_dllPath, -1, dllPathW.data(), wideLen);
+
+            if (m_injector->FindProcess(L"Rust.exe")) {
+                bool success = m_manualMap ?
+                    m_injector->InjectManualMap(dllPathW) :
+                    m_injector->InjectDLL(dllPathW);
+
+                if (success) {
+                    m_statusMessage = "Injection successful!";
+                    AppendLog("[SUCCESS] DLL injected into Rust.exe");
+                } else {
+                    m_statusMessage = "Injection failed!";
+                    AppendLog("[ERROR] DLL injection routine returned failure");
+                }
+            } else {
+                m_statusMessage = "Rust.exe not found!";
+                AppendLog("[WARN] Rust.exe process not found");
+            }
+        }
+    }
+    ImGui::PopStyleColor(3);
+}
+
+void CRustInjector::RenderDLLTab() {
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.85f, 0.15f, 0.15f, 1.0f));
+    ImGui::Text("DLL Selection");
+    ImGui::PopStyleColor();
+    ImGui::Spacing();
+    
+    ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 8.0f);
+    ImGui::BeginChild("DLLCard", ImVec2(0, 150), true);
+    ImGui::PopStyleVar();
+    
+    ImGui::Text("DLL Path:");
+    ImGui::Spacing();
+    ImGui::InputText("##dllpath", m_dllPath, MAX_PATH);
+    ImGui::Spacing();
+    
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.85f, 0.15f, 0.15f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.95f, 0.25f, 0.25f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.75f, 0.05f, 0.05f, 1.0f));
+    if (ImGui::Button("Browse...", ImVec2(150, 35))) {
         OPENFILENAMEW ofn = { 0 };
         wchar_t szFile[MAX_PATH] = { 0 };
         ofn.lStructSize = sizeof(ofn);
@@ -269,58 +506,146 @@ void CRustInjector::RenderUI() {
             WideCharToMultiByte(CP_UTF8, 0, szFile, -1, m_dllPath, MAX_PATH, nullptr, nullptr);
         }
     }
+    ImGui::PopStyleColor(3);
     
+    ImGui::EndChild();
+}
+
+void CRustInjector::RenderOptionsTab() {
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.85f, 0.15f, 0.15f, 1.0f));
+    ImGui::Text("Injection Options");
+    ImGui::PopStyleColor();
     ImGui::Spacing();
     
-    // Injection Options
-    ImGui::SeparatorText("Injection Options");
-    ImGui::Checkbox("Auto-inject on game launch", &m_autoInject);
-    ImGui::Checkbox("Use Manual Mapping (Stealth)", &m_manualMap);
+    ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 8.0f);
+    ImGui::BeginChild("OptionsCard", ImVec2(0, 200), true);
+    ImGui::PopStyleVar();
+    
+    ImGui::PushStyleColor(ImGuiCol_CheckMark, ImVec4(0.85f, 0.15f, 0.15f, 1.0f));
+    if (ImGui::Checkbox("Auto-inject on game launch", &m_autoInject)) {
+        m_animationTimer = 0.0f;
+    }
+    ImGui::Spacing();
+    
+    if (ImGui::Checkbox("Use Manual Mapping (Stealth)", &m_manualMap)) {
+        m_animationTimer = 0.0f;
+    }
     ImGui::SameLine();
+    ImGui::TextDisabled("(?)");
     if (ImGui::IsItemHovered()) {
         ImGui::SetTooltip("Manual mapping is more stealthy but may be less stable");
     }
+    ImGui::PopStyleColor();
     
+    ImGui::EndChild();
+}
+
+void CRustInjector::RenderESPTab() {
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.85f, 0.15f, 0.15f, 1.0f));
+    ImGui::Text("ESP Settings");
+    ImGui::PopStyleColor();
     ImGui::Spacing();
     
-    // Inject Button
-    if (ImGui::Button("Inject DLL", ImVec2(200, 40))) {
-        std::wstring dllPathW(m_dllPath, m_dllPath + strlen(m_dllPath));
-        
-        if (m_injector->FindProcess(L"Rust.exe")) {
-            bool success = m_manualMap ? 
-                m_injector->InjectManualMap(dllPathW) : 
-                m_injector->InjectDLL(dllPathW);
-            
-            if (success) {
-                m_statusMessage = "Injection successful!";
-                m_logMessages.push_back('\0');
-                m_logMessages.push_back((char*)"[SUCCESS] DLL injected into Rust.exe\n");
-            } else {
-                m_statusMessage = "Injection failed!";
-                m_logMessages.push_back('\0');
-                m_logMessages.push_back((char*)"[ERROR] Failed to inject DLL\n");
-            }
-        } else {
-            m_statusMessage = "Rust.exe not found!";
-            m_logMessages.push_back('\0');
-            m_logMessages.push_back((char*)"[ERROR] Rust.exe process not found\n");
-        }
+    ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 8.0f);
+    ImGui::BeginChild("ESPCard", ImVec2(0, 350), true);
+    ImGui::PopStyleVar();
+    
+    ImGui::PushStyleColor(ImGuiCol_CheckMark, ImVec4(0.85f, 0.15f, 0.15f, 1.0f));
+    
+    // Enable ESP
+    if (ImGui::Checkbox("Enable ESP", &m_espEnabled)) {
+        m_animationTimer = 0.0f;
     }
-    
     ImGui::Spacing();
+    
+    // Circle ESP
+    if (ImGui::Checkbox("Circle ESP (Player Outline)", &m_espShowCircle)) {
+        m_animationTimer = 0.0f;
+    }
+    ImGui::Spacing();
+    
+    // Inventory ESP
+    if (ImGui::Checkbox("Inventory ESP (Show Items)", &m_espShowInventory)) {
+        m_animationTimer = 0.0f;
+    }
+    ImGui::SameLine();
+    ImGui::TextDisabled("(?)");
+    if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("Shows player inventory items at top of screen");
+    }
+    ImGui::Spacing();
+    
+    // Weapon Chams
+    if (ImGui::Checkbox("Weapon Chams (Gun Coloring)", &m_espShowChams)) {
+        m_animationTimer = 0.0f;
+    }
+    ImGui::SameLine();
+    ImGui::TextDisabled("(?)");
+    if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("Applies color to weapons");
+    }
+    ImGui::Spacing();
+    
+    // Galaxy Mode
+    if (ImGui::Checkbox("Galaxy Mode (Animated Galaxy Effect)", &m_espGalaxyMode)) {
+        m_animationTimer = 0.0f;
+    }
+    ImGui::SameLine();
+    ImGui::TextDisabled("(?)");
+    if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("Applies animated galaxy effect to weapons and player outline");
+    }
+    ImGui::Spacing();
+    
     ImGui::Separator();
+    ImGui::Spacing();
     
-    // Log Section
-    ImGui::SeparatorText("Log");
-    if (ImGui::BeginChild("Log", ImVec2(0, 200), true)) {
-        for (int i = 0; i < m_logMessages.size; i++) {
-            ImGui::TextUnformatted(&m_logMessages[i]);
+    // Max Distance Slider
+    ImGui::Text("Max Distance:");
+    ImGui::SliderFloat("##maxdist", &m_espMaxDistance, 100.0f, 1000.0f, "%.0fm");
+    ImGui::Spacing();
+    
+    // Circle Radius Slider
+    ImGui::Text("Circle Radius:");
+    ImGui::SliderFloat("##circleradius", &m_espCircleRadius, 10.0f, 100.0f, "%.0f");
+    ImGui::Spacing();
+    
+    ImGui::PopStyleColor();
+    
+    ImGui::EndChild();
+}
+
+void CRustInjector::RenderLogTab() {
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.85f, 0.15f, 0.15f, 1.0f));
+    ImGui::Text("Activity Log");
+    ImGui::PopStyleColor();
+    ImGui::Spacing();
+    
+    ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 8.0f);
+    ImGui::BeginChild("LogCard", ImVec2(0, 400), true);
+    ImGui::PopStyleVar();
+    
+    for (const auto& entry : m_logMessages) {
+        // Color code log entries
+        if (entry.find("[SUCCESS]") != std::string::npos) {
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.2f, 0.8f, 0.2f, 1.0f));
+        } else if (entry.find("[ERROR]") != std::string::npos) {
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.2f, 0.2f, 1.0f));
+        } else if (entry.find("[WARN]") != std::string::npos) {
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.7f, 0.2f, 1.0f));
+        } else {
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.8f, 0.8f, 1.0f));
         }
-        ImGui::EndChild();
+        ImGui::TextUnformatted(entry.c_str());
+        ImGui::PopStyleColor();
     }
     
-    ImGui::End();
+    // Auto-scroll to bottom
+    if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
+        ImGui::SetScrollHereY(1.0f);
+    }
+    
+    ImGui::EndChild();
 }
 
 LRESULT CALLBACK CRustInjector::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -352,6 +677,22 @@ LRESULT CALLBACK CRustInjector::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
     }
     
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
+}
+
+void CRustInjector::AppendLog(const std::string& message) {
+    auto now = std::chrono::system_clock::now();
+    auto timeT = std::chrono::system_clock::to_time_t(now);
+    std::tm localTm{};
+    localtime_s(&localTm, &timeT);
+
+    std::ostringstream oss;
+    oss << "[" << std::put_time(&localTm, "%H:%M:%S") << "] " << message;
+    m_logMessages.emplace_back(oss.str());
+
+    constexpr size_t kMaxLogEntries = 200;
+    if (m_logMessages.size() > kMaxLogEntries) {
+        m_logMessages.erase(m_logMessages.begin(), m_logMessages.end() - kMaxLogEntries);
+    }
 }
 
 int CRustInjector::Run() {

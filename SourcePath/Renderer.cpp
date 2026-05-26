@@ -11,7 +11,8 @@ namespace MIT {
                           vertexBuffer(nullptr), indexBuffer(nullptr), blendState(nullptr),
                           rasterizerState(nullptr), depthStencilState(nullptr), 
                           fontTextureView(nullptr), fontSampler(nullptr),
-                          fps(0.0f), frameTime(0.0f), fpsTimer(std::chrono::high_resolution_clock::now()) {
+                          fps(0.0f), frameTime(0.0f), fpsTimer(std::chrono::high_resolution_clock::now()),
+                          framesSinceLastUpdate(0) {
     }
 
     Renderer::~Renderer() {
@@ -202,21 +203,27 @@ namespace MIT {
     }
 
     void Renderer::UpdatePerformanceMetrics() {
+        ++framesSinceLastUpdate;
+
         auto currentTime = std::chrono::high_resolution_clock::now();
-        auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(currentTime - fpsTimer).count();
-        
-        if (elapsed >= 1000000) { // Update every second
-            fps = 1000000.0f / (elapsed / fpsHistory.size());
-            frameTime = elapsed / 1000.0f / fpsHistory.size();
-            
-            if (fpsHistory.size() > 60) {
-                fpsHistory.erase(fpsHistory.begin());
+        auto elapsedMicros = std::chrono::duration_cast<std::chrono::microseconds>(currentTime - fpsTimer).count();
+
+        if (elapsedMicros >= 1'000'000) { // Update every second
+            const float elapsedSeconds = static_cast<float>(elapsedMicros) / 1'000'000.0f;
+
+            if (framesSinceLastUpdate > 0 && elapsedSeconds > 0.0f) {
+                fps = static_cast<float>(framesSinceLastUpdate) / elapsedSeconds;
+                frameTime = (elapsedSeconds * 1000.0f) / static_cast<float>(framesSinceLastUpdate);
+
+                if (fpsHistory.size() >= 60) {
+                    fpsHistory.erase(fpsHistory.begin());
+                }
+                fpsHistory.push_back(fps);
             }
-            
+
+            framesSinceLastUpdate = 0;
             fpsTimer = currentTime;
         }
-        
-        fpsHistory.push_back(1000000.0f / elapsed);
     }
 
     void Renderer::Shutdown() {

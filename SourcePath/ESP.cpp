@@ -859,6 +859,370 @@ namespace MIT {
         drawList->AddLine(box.max, ImVec2(box.max.x, box.max.y - cornerLength), color, 2.0f);
     }
 
+    void ESP::drawCircleESP(const ImVec2& screenPos, float radius, ImU32 color) {
+        if (!config.showCircleESP) return;
+        
+        // Draw circle outline around player
+        drawList->AddCircle(screenPos, radius, color, 32, config.circleThickness);
+        
+        // Draw small dot in center
+        drawList->AddCircleFilled(screenPos, 2.0f, color, 8);
+    }
+    
+    void ESP::drawInventoryESP(const Entity& entity, const ImVec2& screenPos) {
+        if (!config.showInventory || entity.type != EntityType::Player) return;
+        
+        // Calculate inventory bar position (top center of screen for local player)
+        const ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImVec2 barPos = ImVec2(viewport->WorkSize.x / 2 - 150, viewport->WorkPos.y + 50);
+        
+        // Draw inventory background
+        ImVec4 bgColor = ImVec4(0.1f, 0.1f, 0.1f, 0.8f);
+        ImU32 bgCol = IM_COL32(
+            static_cast<int>(bgColor.x * 255),
+            static_cast<int>(bgColor.y * 255),
+            static_cast<int>(bgColor.z * 255),
+            static_cast<int>(bgColor.w * 255)
+        );
+        
+        drawList->AddRectFilled(barPos, ImVec2(barPos.x + 300, barPos.y + 40), bgCol, 8.0f);
+        
+        // Draw inventory slots
+        float slotSize = 35.0f;
+        float slotGap = 5.0f;
+        
+        for (int i = 0; i < 6; i++) {
+            ImVec2 slotPos = ImVec2(barPos.x + 10 + i * (slotSize + slotGap), barPos.y + 2.5f);
+            
+            // Draw slot background
+            ImVec4 slotBg = ImVec4(0.2f, 0.2f, 0.25f, 1.0f);
+            ImU32 slotCol = IM_COL32(
+                static_cast<int>(slotBg.x * 255),
+                static_cast<int>(slotBg.y * 255),
+                static_cast<int>(slotBg.z * 255),
+                static_cast<int>(slotBg.w * 255)
+            );
+            
+            drawList->AddRectFilled(slotPos, ImVec2(slotPos.x + slotSize, slotPos.y + slotSize), slotCol, 4.0f);
+            
+            // Draw item if available (simplified - would read from actual inventory)
+            if (i < static_cast<int>(entity.inventory.size())) {
+                ImVec4 itemColor = ImVec4(0.8f, 0.8f, 0.8f, 1.0f);
+                ImU32 itemCol = IM_COL32(
+                    static_cast<int>(itemColor.x * 255),
+                    static_cast<int>(itemColor.y * 255),
+                    static_cast<int>(itemColor.z * 255),
+                    static_cast<int>(itemColor.w * 255)
+                );
+                
+                // Draw item icon placeholder
+                drawList->AddRectFilled(
+                    ImVec2(slotPos.x + 5, slotPos.y + 5),
+                    ImVec2(slotPos.x + slotSize - 5, slotPos.y + slotSize - 5),
+                    itemCol, 2.0f
+                );
+                
+                // Draw item name below
+                std::string itemName = entity.inventory[i].name;
+                ImVec2 textPos = ImVec2(slotPos.x + slotSize/2 - 10, slotPos.y + slotSize + 2);
+                drawList->AddText(textPos, itemCol, itemName.c_str());
+            }
+        }
+    }
+    
+    void ESP::applyGalaxyEffect(const Entity& entity) {
+        if (!config.galaxyMode || entity.type != EntityType::Player) return;
+        
+        ImVec2 screenPos;
+        if (!worldToScreen(entity.position, screenPos)) return;
+        
+        // Get current time for animation
+        float time = static_cast<float>(GetTickCount64()) / 1000.0f;
+        
+        // Dynamic radius based on distance for depth effect
+        float baseRadius = config.circleRadius * 1.8f;
+        
+        // Draw outer glow layer (fading gradient)
+        for (int layer = 0; layer < 5; layer++) {
+            float layerRadius = baseRadius + (layer * 15.0f);
+            float layerAlpha = 0.15f - (layer * 0.03f);
+            
+            ImU32 glowCol = IM_COL32(
+                static_cast<int>(config.galaxyColor1.x * 255 * layerAlpha),
+                static_cast<int>(config.galaxyColor2.y * 255 * layerAlpha),
+                static_cast<int>(config.galaxyColor3.z * 255 * layerAlpha),
+                static_cast<int>(255 * layerAlpha)
+            );
+            
+            drawList->AddCircle(screenPos, layerRadius, glowCol, 64, 1.0f);
+        }
+        
+        // Draw main spiral galaxy effect
+        int spiralArms = 5;
+        int segmentsPerArm = 30;
+        
+        for (int arm = 0; arm < spiralArms; arm++) {
+            float armOffset = (arm / static_cast<float>(spiralArms)) * 6.28318f;
+            
+            for (int i = 0; i < segmentsPerArm; i++) {
+                float t = i / static_cast<float>(segmentsPerArm);
+                float radius = t * baseRadius;
+                float angle = armOffset + (t * 3.0f) + (time * 0.5f);
+                
+                // Add wave motion for organic feel
+                float wave = sin(angle * 3.0f + time * 2.0f) * 5.0f;
+                
+                ImVec2 p1 = ImVec2(
+                    screenPos.x + cos(angle) * (radius + wave),
+                    screenPos.y + sin(angle) * (radius + wave)
+                );
+                
+                float nextT = (i + 1) / static_cast<float>(segmentsPerArm);
+                float nextRadius = nextT * baseRadius;
+                float nextAngle = armOffset + (nextT * 3.0f) + (time * 0.5f);
+                float nextWave = sin(nextAngle * 3.0f + time * 2.0f) * 5.0f;
+                
+                ImVec2 p2 = ImVec2(
+                    screenPos.x + cos(nextAngle) * (nextRadius + nextWave),
+                    screenPos.y + sin(nextAngle) * (nextRadius + nextWave)
+                );
+                
+                // Gradient color along the spiral
+                ImU32 spiralCol = getGalaxyColor(time + t, t);
+                float thickness = 3.0f * (1.0f - t * 0.5f);
+                drawList->AddLine(p1, p2, spiralCol, thickness);
+            }
+        }
+        
+        // Draw inner nebula effect (multiple overlapping circles with varying opacity)
+        for (int nebula = 0; nebula < 8; nebula++) {
+            float nebulaAngle = (nebula / 8.0f) * 6.28318f + time * 0.3f;
+            float nebulaRadius = baseRadius * 0.4f + sin(time + nebula) * 10.0f;
+            ImVec2 nebulaPos = ImVec2(
+                screenPos.x + cos(nebulaAngle) * nebulaRadius,
+                screenPos.y + sin(nebulaAngle) * nebulaRadius
+            );
+            
+            float nebulaSize = 15.0f + sin(time * 2.0f + nebula) * 5.0f;
+            ImU32 nebulaCol = getGalaxyColor(time + nebula * 0.5f, nebula / 8.0f);
+            
+            // Draw soft nebula blob
+            for (int layer = 0; layer < 3; layer++) {
+                float layerSize = nebulaSize * (1.0f - layer * 0.3f);
+                float layerAlpha = 0.3f - layer * 0.1f;
+                ImU32 nebulaLayerCol = IM_COL32(
+                    static_cast<int>((nebulaCol >> IM_COL32_R_SHIFT) & 0xFF * layerAlpha),
+                    static_cast<int>((nebulaCol >> IM_COL32_G_SHIFT) & 0xFF * layerAlpha),
+                    static_cast<int>((nebulaCol >> IM_COL32_B_SHIFT) & 0xFF * layerAlpha),
+                    static_cast<int>(255 * layerAlpha)
+                );
+                drawList->AddCircleFilled(nebulaPos, layerSize, nebulaLayerCol, 16);
+            }
+        }
+        
+        // Draw star field with twinkling effect
+        for (int star = 0; star < 40; star++) {
+            float starAngle = (star / 40.0f) * 6.28318f + time * 0.2f;
+            float starDist = baseRadius * (0.3f + 0.7f * ((star % 5) / 5.0f));
+            
+            // Add orbital motion
+            float orbitSpeed = 0.5f + (star % 3) * 0.3f;
+            float currentAngle = starAngle + time * orbitSpeed;
+            
+            ImVec2 starPos = ImVec2(
+                screenPos.x + cos(currentAngle) * starDist,
+                screenPos.y + sin(currentAngle) * starDist
+            );
+            
+            // Twinkling effect
+            float twinkle = 0.5f + 0.5f * sin(time * 3.0f + star);
+            float starSize = 1.5f + twinkle * 1.5f;
+            
+            ImU32 starCol = getGalaxyColor(time + star * 0.1f, star / 40.0f);
+            ImU32 twinkleCol = IM_COL32(
+                static_cast<int>(((starCol >> IM_COL32_R_SHIFT) & 0xFF) * twinkle),
+                static_cast<int>(((starCol >> IM_COL32_G_SHIFT) & 0xFF) * twinkle),
+                static_cast<int>(((starCol >> IM_COL32_B_SHIFT) & 0xFF) * twinkle),
+                255
+            );
+            
+            drawList->AddCircleFilled(starPos, starSize, twinkleCol, 8);
+        }
+        
+        // Draw energy trails following movement (simulated)
+        static float lastTime = time;
+        static ImVec2 lastScreenPos = screenPos;
+        float deltaTime = time - lastTime;
+        
+        if (deltaTime > 0.0f) {
+            ImVec2 velocity = ImVec2(
+                (screenPos.x - lastScreenPos.x) / deltaTime,
+                (screenPos.y - lastScreenPos.y) / deltaTime
+            );
+            
+            float speed = sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+            
+            if (speed > 10.0f) {
+                // Draw motion trail
+                for (int trail = 0; trail < 5; trail++) {
+                    float trailAlpha = 0.4f - trail * 0.08f;
+                    float trailOffset = trail * 8.0f;
+                    
+                    ImVec2 trailPos = ImVec2(
+                        screenPos.x - velocity.x * trail * 0.02f,
+                        screenPos.y - velocity.y * trail * 0.02f
+                    );
+                    
+                    ImU32 trailCol = IM_COL32(
+                        static_cast<int>(config.galaxyColor2.x * 255 * trailAlpha),
+                        static_cast<int>(config.galaxyColor2.y * 255 * trailAlpha),
+                        static_cast<int>(config.galaxyColor2.z * 255 * trailAlpha),
+                        static_cast<int>(255 * trailAlpha)
+                    );
+                    
+                    drawList->AddCircle(trailPos, baseRadius * 0.3f - trailOffset, trailCol, 32, 2.0f);
+                }
+            }
+        }
+        
+        lastTime = time;
+        lastScreenPos = screenPos;
+    }
+    
+    ImU32 ESP::getGalaxyColor(float time, float offset) {
+        // More sophisticated color interpolation with cosine smoothing
+        float t = fmod(time + offset, 4.0f);
+        
+        // Use cosine interpolation for smoother transitions
+        float smoothT = (1.0f - cos(t * 3.14159f / 2.0f)) / 2.0f;
+        
+        ImVec4 color;
+        if (t < 1.0f) {
+            // Blend between purple and blue
+            float blend = smoothT;
+            color = ImVec4(
+                config.galaxyColor1.x * (1.0f - blend) + config.galaxyColor2.x * blend,
+                config.galaxyColor1.y * (1.0f - blend) + config.galaxyColor2.y * blend,
+                config.galaxyColor1.z * (1.0f - blend) + config.galaxyColor2.z * blend,
+                1.0f
+            );
+        } else if (t < 2.0f) {
+            // Blend between blue and cyan
+            float blend = smoothT;
+            ImVec4 cyanColor = ImVec4(0.0f, 0.8f, 1.0f, 1.0f);
+            color = ImVec4(
+                config.galaxyColor2.x * (1.0f - blend) + cyanColor.x * blend,
+                config.galaxyColor2.y * (1.0f - blend) + cyanColor.y * blend,
+                config.galaxyColor2.z * (1.0f - blend) + cyanColor.z * blend,
+                1.0f
+            );
+        } else if (t < 3.0f) {
+            // Blend between cyan and pink
+            float blend = smoothT;
+            color = ImVec4(
+                cyanColor.x * (1.0f - blend) + config.galaxyColor3.x * blend,
+                cyanColor.y * (1.0f - blend) + config.galaxyColor3.y * blend,
+                cyanColor.z * (1.0f - blend) + config.galaxyColor3.z * blend,
+                1.0f
+            );
+        } else {
+            // Blend between pink and purple
+            float blend = smoothT;
+            color = ImVec4(
+                config.galaxyColor3.x * (1.0f - blend) + config.galaxyColor1.x * blend,
+                config.galaxyColor3.y * (1.0f - blend) + config.galaxyColor1.y * blend,
+                config.galaxyColor3.z * (1.0f - blend) + config.galaxyColor1.z * blend,
+                1.0f
+            );
+        }
+        
+        return IM_COL32(
+            static_cast<int>(color.x * 255),
+            static_cast<int>(color.y * 255),
+            static_cast<int>(color.z * 255),
+            static_cast<int>(color.w * 255)
+        );
+    }
+
+    void ESP::applyWeaponChams(const Entity& entity) {
+        if (!config.showWeaponChams || entity.type != EntityType::Player) return;
+        
+        ImVec2 screenPos;
+        if (!worldToScreen(entity.position, screenPos)) return;
+        
+        float time = static_cast<float>(GetTickCount64()) / 1000.0f;
+        
+        // Weapon position offset (right side of player)
+        ImVec2 weaponPos = ImVec2(screenPos.x + 25, screenPos.y + 5);
+        
+        if (config.galaxyMode) {
+            // Draw sophisticated galaxy effect for weapon
+            
+            // Outer glow
+            for (int layer = 0; layer < 3; layer++) {
+                float glowRadius = 12.0f + layer * 4.0f;
+                float glowAlpha = 0.2f - layer * 0.05f;
+                ImU32 glowCol = IM_COL32(
+                    static_cast<int>(config.galaxyColor2.x * 255 * glowAlpha),
+                    static_cast<int>(config.galaxyColor2.y * 255 * glowAlpha),
+                    static_cast<int>(config.galaxyColor2.z * 255 * glowAlpha),
+                    static_cast<int>(255 * glowAlpha)
+                );
+                drawList->AddCircle(weaponPos, glowRadius, glowCol, 32, 1.0f);
+            }
+            
+            // Mini spiral around weapon
+            int miniSpirals = 3;
+            for (int spiral = 0; spiral < miniSpirals; spiral++) {
+                float spiralOffset = (spiral / static_cast<float>(miniSpirals)) * 6.28318f;
+                
+                for (int i = 0; i < 15; i++) {
+                    float t = i / 15.0f;
+                    float radius = t * 10.0f;
+                    float angle = spiralOffset + (t * 2.0f) + (time * 1.5f);
+                    
+                    ImVec2 p = ImVec2(
+                        weaponPos.x + cos(angle) * radius,
+                        weaponPos.y + sin(angle) * radius
+                    );
+                    
+                    ImU32 spiralCol = getGalaxyColor(time + t + spiral, t);
+                    drawList->AddCircleFilled(p, 1.5f, spiralCol, 8);
+                }
+            }
+            
+            // Central weapon indicator with pulsing
+            float pulse = 0.8f + 0.2f * sin(time * 3.0f);
+            ImU32 centerCol = getGalaxyColor(time, 0.0f);
+            drawList->AddCircleFilled(weaponPos, 6.0f * pulse, centerCol, 16);
+            
+            // Orbiting particles
+            for (int i = 0; i < 12; i++) {
+                float angle = (i / 12.0f) * 6.28318f + time * 2.0f;
+                float dist = 8.0f + sin(time * 2.0f + i) * 2.0f;
+                
+                ImVec2 particlePos = ImVec2(
+                    weaponPos.x + cos(angle) * dist,
+                    weaponPos.y + sin(angle) * dist
+                );
+                
+                ImU32 particleCol = getGalaxyColor(time + i * 0.1f, i / 12.0f);
+                drawList->AddCircleFilled(particlePos, 1.0f, particleCol, 8);
+            }
+            
+        } else {
+            // Standard pink chams
+            ImU32 chamsCol = IM_COL32(
+                static_cast<int>(config.chamsColor.x * 255),
+                static_cast<int>(config.chamsColor.y * 255),
+                static_cast<int>(config.chamsColor.z * 255),
+                static_cast<int>(config.chamsColor.w * 255)
+            );
+            
+            drawList->AddCircleFilled(weaponPos, 5.0f, chamsCol, 8);
+        }
+    }
+
     void ESP::drawEntityInfo(const Entity& entity, const ImVec2& screenPos) {
         ImVec4 color;
         switch (entity.type) {
@@ -937,9 +1301,6 @@ namespace MIT {
             ImVec2 screenPos;
             if (!worldToScreen(entity.position, screenPos)) continue;
             
-            // Calculate bounding box
-            BoundingBox box = calculateBoundingBox(entity.position);
-            
             // Determine color based on entity type
             ImU32 color;
             switch (entity.type) {
@@ -972,12 +1333,33 @@ namespace MIT {
                     break;
             }
             
-            // Draw bounding box
-            drawBoundingBox(box, color);
+            // Draw circle ESP instead of bounding box (matching reference image)
+            if (entity.type == EntityType::Player) {
+                drawCircleESP(screenPos, config.circleRadius, color);
+            } else {
+                // Use bounding box for non-players
+                BoundingBox box = calculateBoundingBox(entity.position);
+                drawBoundingBox(box, color);
+            }
             
             // Draw entity info
-            ImVec2 infoPos = ImVec2(box.min.x, box.min.y - 30.0f);
+            ImVec2 infoPos = ImVec2(screenPos.x, screenPos.y - config.circleRadius - 20);
             drawEntityInfo(entity, infoPos);
+            
+            // Draw inventory ESP for players
+            if (entity.type == EntityType::Player) {
+                drawInventoryESP(entity, screenPos);
+            }
+            
+            // Apply weapon chams for players
+            if (entity.type == EntityType::Player) {
+                applyWeaponChams(entity);
+            }
+            
+            // Apply galaxy effect for players
+            if (entity.type == EntityType::Player) {
+                applyGalaxyEffect(entity);
+            }
         }
     }
 

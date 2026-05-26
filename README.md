@@ -4,6 +4,25 @@ A sophisticated C++ utility implementing the MIT Method pipeline with advanced m
 
 ## Quick Setup Guide
 
+### Option 1: Using the DownloadGUI Installer (Recommended for End Users)
+
+1. **Run the installer**
+   - Download and run `DownloadGUI.exe` from the releases or build it yourself
+   - The installer will automatically download and set up all required files
+
+2. **What the installer does:**
+   - Downloads RustInjector.exe
+   - Downloads EnhancedProject.dll
+   - Downloads DirectX End-User Runtime (if not installed)
+   - Downloads Visual C++ Redistributable (if not installed)
+   - Checks for Visual Studio 2019/2022 and warns if missing
+
+3. **After installation:**
+   - Click "Launch P Client" to start the injector
+   - Or manually run `C:\Program Files\P Client\RustInjector.exe`
+
+### Option 2: Manual Setup (For Developers)
+
 1. **Install prerequisites** (links open in your browser):
    - [Visual Studio 2022 Community](https://visualstudio.microsoft.com/vs/community/) &rarr; install the **Desktop development with C++** workload (includes MSVC, Windows 10 SDK, and DirectX runtime components).
    - [Microsoft Visual C++ Redistributable for VS 2015-2022 (x64)](https://aka.ms/vs/17/release/vc_redist.x64.exe) &rarr; required by the compiled executable on end-user machines.
@@ -16,20 +35,22 @@ A sophisticated C++ utility implementing the MIT Method pipeline with advanced m
    - **KDMapper** (for manual mapping): [GitHub Repository](https://github.com/TheCruZ/kdmapper)
    - The system automatically falls back to user-mode operations if no driver is available.
 
-2. **Clone the repository**
+3. **Clone the repository**
    ```powershell
    git clone https://github.com/hidude455/rust-external.git
    cd rust-external
    ```
 
-3. **Build**
-   - Double-click `build_final.bat` (or run it from a Developer PowerShell prompt). The script invokes MSBuild in **Release | x64** and places the binary in `SourcePath\bin\x64\Release\MITMethod_Enhanced.exe`.
+4. **Build**
+   - Double-click `build_injector.bat` (or run it from a Developer PowerShell prompt). The script invokes MSBuild in **Release | x64** and places the binary in `SourcePath\bin\x64\Release\MITMethod_Enhanced.exe`.
+   - To build the DownloadGUI installer: Double-click `build_injector.bat` which will also build DownloadGUI.exe to `SourcePath\bin\DownloadGUI\x64\Release\DownloadGUI.exe`
 
-4. **Run**
-   - Launch Rust first, then execute the built loader (use `Start-Process` in PowerShell if you need elevation).
+5. **Run**
+   - **End Users**: Run `DownloadGUI.exe` from the bin folder to use the automated installer
+   - **Developers**: Launch Rust first, then execute the built loader (use `Start-Process` in PowerShell if you need elevation).
    - Diagnostics are written to `%TEMP%\RustExternal\loader_debug.log`; inspect this file if the window fails to appear.
 
-5. **Troubleshooting**
+6. **Troubleshooting**
    - If Visual Studio reports missing components, rerun the Visual Studio Installer and ensure **Desktop development with C++** is checked.
    - Install the VC++ redistributable on any system that will run the compiled executable but does not have Visual Studio.
    - When DirectX initialization fails, reinstall the DirectX End-User Runtime and update GPU drivers.
