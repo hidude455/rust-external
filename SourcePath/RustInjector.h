@@ -30,6 +30,13 @@ private:
     
     void RenderFrame();
     void RenderUI();
+    void RenderModuleList();
+    void RenderModuleContent();
+    void RenderESPModuleContent();
+    void RenderCombatModuleContent();
+    void RenderVisualModuleContent();
+    void RenderMiscModuleContent();
+    void RenderDLLModuleContent();
     void RenderStatusTab();
     void RenderDLLTab();
     void RenderOptionsTab();
@@ -66,7 +73,8 @@ private:
     std::vector<std::string> m_logMessages;
     
     // Navigation State
-    int m_selectedTab;
+    int m_selectedCategory;
+    int m_selectedModule;
     float m_animationTimer;
     
     // ESP Settings
@@ -77,4 +85,17 @@ private:
     bool m_espGalaxyMode;
     float m_espMaxDistance;
     float m_espCircleRadius;
+    
+    // Visual Settings
+    bool m_noNightEnabled;
+    bool m_purpleSkyEnabled;
+    float m_purpleSkyIntensity;
+    bool m_galaxySkyEffect;
+    
+    // Combat Settings
+    bool m_aimbotEnabled;
+    float m_aimbotFOV;
+    float m_aimbotSmoothness;
+    bool m_noRecoilEnabled;
+    bool m_noSpreadEnabled;
 };

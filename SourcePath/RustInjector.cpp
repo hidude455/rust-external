@@ -27,7 +27,8 @@ CRustInjector::CRustInjector()
     , m_driverLoaded(false)
     , m_autoInject(false)
     , m_manualMap(false)
-    , m_selectedTab(0)
+    , m_selectedCategory(0)
+    , m_selectedModule(0)
     , m_animationTimer(0.0f)
     , m_espEnabled(true)
     , m_espShowCircle(true)
@@ -36,6 +37,15 @@ CRustInjector::CRustInjector()
     , m_espGalaxyMode(false)
     , m_espMaxDistance(500.0f)
     , m_espCircleRadius(30.0f)
+    , m_noNightEnabled(false)
+    , m_purpleSkyEnabled(false)
+    , m_purpleSkyIntensity(0.5f)
+    , m_galaxySkyEffect(false)
+    , m_aimbotEnabled(false)
+    , m_aimbotFOV(90.0f)
+    , m_aimbotSmoothness(5.0f)
+    , m_noRecoilEnabled(false)
+    , m_noSpreadEnabled(false)
 {
     strcpy_s(m_dllPath, "EnhancedProject.dll");
     m_statusMessage = "Ready - Waiting for Rust process...";
@@ -335,81 +345,243 @@ void CRustInjector::RenderFrame() {
 
 void CRustInjector::RenderUI() {
     ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(900, 650), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(1200, 700), ImGuiCond_FirstUseEver);
     
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-    ImGui::Begin("P Client - Rust Injector", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_MenuBar);
-    ImGui::PopStyleVar();
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+    ImGui::Begin("P Client - Rust Injector", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
+    ImGui::PopStyleVar(3);
     
-    // Menu bar
-    if (ImGui::BeginMenuBar()) {
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.85f, 0.15f, 0.15f, 1.0f));
-        ImGui::Text("cheatstore.net");
-        ImGui::PopStyleColor();
-        ImGui::SameLine(0, 20);
-        ImGui::Text("Injector");
-        ImGui::SameLine(0, 400);
-        if (ImGui::MenuItem("Exit")) {
-            m_running = false;
-        }
-        ImGui::EndMenuBar();
-    }
+    ImVec2 windowPos = ImGui::GetWindowPos();
+    ImVec2 windowSize = ImGui::GetWindowSize();
     
-    // Main content area with sidebar
+    // Background
+    ImDrawList* drawList = ImGui::GetWindowDrawList();
+    drawList->AddRectFilled(windowPos, ImVec2(windowPos.x + windowSize.x, windowPos.y + windowSize.y), ImColor(0.04f, 0.04f, 0.06f, 1.0f));
+    
+    // Left Column - Icons (60px)
+    ImGui::SetCursorPos(ImVec2(0, 0));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-    ImGui::BeginChild("MainContent", ImVec2(0, 0), false);
+    ImGui::BeginChild("IconColumn", ImVec2(60, windowSize.y), false);
     ImGui::PopStyleVar();
     
-    // Sidebar
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12, 12));
-    ImGui::BeginChild("Sidebar", ImVec2(180, 0), true);
-    ImGui::PopStyleVar();
-    
-    const char* tabs[] = { "Status", "DLL", "Options", "ESP", "Log" };
+    const char* categoryIcons[] = { "👁", "⚔", "🎨", "⚙", "📦" };
     for (int i = 0; i < 5; i++) {
-        bool isSelected = (m_selectedTab == i);
+        bool isSelected = (m_selectedCategory == i);
         
         if (isSelected) {
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.85f, 0.15f, 0.15f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.95f, 0.25f, 0.25f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.75f, 0.05f, 0.05f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.0f, 0.4f, 0.3f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.0f, 0.4f, 0.5f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 0.0f, 0.4f, 0.7f));
         } else {
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.05f, 0.05f, 0.07f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.15f, 0.15f, 0.18f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.85f, 0.15f, 0.15f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.1f, 0.1f, 0.15f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 0.0f, 0.4f, 0.3f));
         }
         
-        if (ImGui::Button(tabs[i], ImVec2(156, 40))) {
-            m_selectedTab = i;
-            m_animationTimer = 0.0f;
+        if (ImGui::Button(categoryIcons[i], ImVec2(60, 60))) {
+            m_selectedCategory = i;
+            m_selectedModule = 0;
         }
-        
         ImGui::PopStyleColor(3);
-        ImGui::Spacing();
     }
     
     ImGui::EndChild();
     
-    ImGui::SameLine();
-    
-    // Content area
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(20, 20));
-    ImGui::BeginChild("Content", ImVec2(0, 0), true);
+    // Middle Column - Modules (200px, offset right)
+    ImGui::SetCursorPos(ImVec2(60, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+    ImGui::BeginChild("ModuleColumn", ImVec2(200, windowSize.y), false);
     ImGui::PopStyleVar();
     
-    // Render selected tab content
-    switch (m_selectedTab) {
-        case 0: RenderStatusTab(); break;
-        case 1: RenderDLLTab(); break;
-        case 2: RenderOptionsTab(); break;
-        case 3: RenderESPTab(); break;
-        case 4: RenderLogTab(); break;
+    RenderModuleList();
+    
+    ImGui::EndChild();
+    
+    // Right Column - Content (remaining space)
+    ImGui::SetCursorPos(ImVec2(260, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(25, 25));
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.07f, 0.07f, 0.09f, 1.0f));
+    ImGui::BeginChild("ContentColumn", ImVec2(windowSize.x - 260, windowSize.y), true);
+    ImGui::PopStyleColor();
+    ImGui::PopStyleVar();
+    
+    RenderModuleContent();
+    
+    ImGui::EndChild();
+    
+    ImGui::End();
+}
+
+void CRustInjector::RenderModuleList() {
+    const char* espModules[] = { "Player ESP", "Item ESP", "Entity ESP", "Tracers" };
+    const char* combatModules[] = { "Aimbot", "No Recoil", "No Spread" };
+    const char* visualModules[] = { "Weapon Chams", "Glow Effects" };
+    const char* miscModules[] = { "No Night", "Purple Sky", "AntiAFK" };
+    const char* dllModules[] = { "DLL Path", "Inject", "Settings" };
+    
+    const char** modules = nullptr;
+    int moduleCount = 0;
+    
+    switch (m_selectedCategory) {
+        case 0: modules = espModules; moduleCount = 4; break;
+        case 1: modules = combatModules; moduleCount = 3; break;
+        case 2: modules = visualModules; moduleCount = 2; break;
+        case 3: modules = miscModules; moduleCount = 3; break;
+        case 4: modules = dllModules; moduleCount = 3; break;
     }
     
-    ImGui::EndChild();
+    for (int i = 0; i < moduleCount; i++) {
+        bool isSelected = (m_selectedModule == i);
+        
+        if (isSelected) {
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.0f, 0.4f, 0.3f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.0f, 0.4f, 0.4f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 0.0f, 0.4f, 0.5f));
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+        } else {
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.1f, 0.1f, 0.15f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 0.0f, 0.4f, 0.3f));
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 0.6f, 1.0f));
+        }
+        
+        if (ImGui::Button(modules[i], ImVec2(200, 45))) {
+            m_selectedModule = i;
+        }
+        ImGui::PopStyleColor(4);
+    }
+}
+
+void CRustInjector::RenderModuleContent() {
+    switch (m_selectedCategory) {
+        case 0: RenderESPModuleContent(); break;
+        case 1: RenderCombatModuleContent(); break;
+        case 2: RenderVisualModuleContent(); break;
+        case 3: RenderMiscModuleContent(); break;
+        case 4: RenderDLLModuleContent(); break;
+    }
+}
+
+void CRustInjector::RenderESPModuleContent() {
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.4f, 1.0f));
+    ImGui::Text("ESP Settings");
+    ImGui::PopStyleColor();
+    ImGui::Spacing();
     
-    ImGui::EndChild();
-    ImGui::End();
+    switch (m_selectedModule) {
+        case 0: // Player ESP
+            ImGui::Checkbox("Enabled", &m_espEnabled);
+            ImGui::Checkbox("Circle ESP", &m_espShowCircle);
+            ImGui::Checkbox("Inventory ESP", &m_espShowInventory);
+            ImGui::Checkbox("Weapon Chams", &m_espShowChams);
+            ImGui::Checkbox("Galaxy Mode", &m_espGalaxyMode);
+            ImGui::SliderFloat("Max Distance", &m_espMaxDistance, 0.0f, 1000.0f);
+            ImGui::SliderFloat("Circle Radius", &m_espCircleRadius, 10.0f, 100.0f);
+            break;
+        case 1: // Item ESP
+            ImGui::Text("Item ESP Settings");
+            ImGui::Checkbox("Show Loot", &m_espShowInventory);
+            ImGui::SliderFloat("Distance", &m_espMaxDistance, 0.0f, 500.0f);
+            break;
+        case 2: // Entity ESP
+            ImGui::Text("Entity ESP Settings");
+            break;
+        case 3: // Tracers
+            ImGui::Text("Tracer Settings");
+            break;
+    }
+}
+
+void CRustInjector::RenderCombatModuleContent() {
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.4f, 1.0f));
+    ImGui::Text("Combat Settings");
+    ImGui::PopStyleColor();
+    ImGui::Spacing();
+    
+    switch (m_selectedModule) {
+        case 0: // Aimbot
+            ImGui::Checkbox("Enabled", &m_aimbotEnabled);
+            ImGui::SliderFloat("FOV", &m_aimbotFOV, 10.0f, 180.0f);
+            ImGui::SliderFloat("Smoothness", &m_aimbotSmoothness, 1.0f, 20.0f);
+            break;
+        case 1: // No Recoil
+            ImGui::Checkbox("Enabled", &m_noRecoilEnabled);
+            break;
+        case 2: // No Spread
+            ImGui::Checkbox("Enabled", &m_noSpreadEnabled);
+            break;
+    }
+}
+
+void CRustInjector::RenderVisualModuleContent() {
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.4f, 1.0f));
+    ImGui::Text("Visual Settings");
+    ImGui::PopStyleColor();
+    ImGui::Spacing();
+    
+    switch (m_selectedModule) {
+        case 0: // Weapon Chams
+            ImGui::Checkbox("Enabled", &m_espShowChams);
+            ImGui::Checkbox("Galaxy Mode", &m_espGalaxyMode);
+            break;
+        case 1: // Glow Effects
+            ImGui::Text("Glow Settings");
+            break;
+    }
+}
+
+void CRustInjector::RenderMiscModuleContent() {
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.4f, 1.0f));
+    ImGui::Text("Misc Settings");
+    ImGui::PopStyleColor();
+    ImGui::Spacing();
+    
+    switch (m_selectedModule) {
+        case 0: // No Night
+            ImGui::Checkbox("Enabled", &m_noNightEnabled);
+            ImGui::Text("Always Day Mode");
+            break;
+        case 1: // Purple Sky
+            ImGui::Checkbox("Enabled", &m_purpleSkyEnabled);
+            ImGui::Checkbox("Galaxy Effect", &m_galaxySkyEffect);
+            ImGui::SliderFloat("Intensity", &m_purpleSkyIntensity, 0.0f, 1.0f);
+            break;
+        case 2: // AntiAFK
+            ImGui::Text("AntiAFK Settings");
+            break;
+    }
+}
+
+void CRustInjector::RenderDLLModuleContent() {
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.4f, 1.0f));
+    ImGui::Text("DLL Settings");
+    ImGui::PopStyleColor();
+    ImGui::Spacing();
+    
+    switch (m_selectedModule) {
+        case 0: // DLL Path
+            ImGui::InputText("DLL Path", m_dllPath, MAX_PATH);
+            if (ImGui::Button("Browse")) {
+                // File browser implementation
+            }
+            break;
+        case 1: // Inject
+            ImGui::Checkbox("Auto-inject", &m_autoInject);
+            ImGui::Checkbox("Manual Mapping", &m_manualMap);
+            ImGui::Spacing();
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.0f, 0.4f, 1.0f));
+            if (ImGui::Button("Inject DLL", ImVec2(200, 45))) {
+                // Injection logic
+            }
+            ImGui::PopStyleColor();
+            break;
+        case 2: // Settings
+            ImGui::Text("Driver Status:");
+            ImGui::Text(m_driverLoaded ? "Loaded" : "Not Loaded");
+            break;
+    }
 }
 
 void CRustInjector::RenderStatusTab() {
