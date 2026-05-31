@@ -169,6 +169,7 @@
     <ClCompile Include="Loader.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="MemoryManager.cpp" />
+    <ClCompile Include="offsets.cpp" />
     <ClCompile Include="Menu.cpp" />
     <ClCompile Include="NetworkBypass.cpp" />
     <ClCompile Include="PluginManager.cpp" />

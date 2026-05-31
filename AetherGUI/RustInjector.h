@@ -12,7 +12,6 @@
 #include "KernelInterface.h"
 #include "MemoryManager.h"
 #include "ESP.h"
-#include "Aimbot.h"
 #include "Renderer.h"
 #include "RendererDX.h"
 #include "../MenuPath/imgui/imgui.h"
@@ -121,7 +120,6 @@ private:
     std::unique_ptr<MemoryManager> m_memoryManager;
     std::unique_ptr<Renderer> m_renderer;
     std::unique_ptr<ESP> m_esp;
-    std::unique_ptr<MIT::Aimbot> m_aimbot;
     bool m_running;
     bool m_initialized;
     bool m_driverLoaded;

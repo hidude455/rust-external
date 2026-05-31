@@ -37,7 +37,6 @@ CRustInjector::CRustInjector()
     , m_memoryManager(nullptr)
     , m_renderer(nullptr)
     , m_esp(nullptr)
-    , m_aimbot(nullptr)
     , m_running(false)
     , m_initialized(false)
     , m_driverLoaded(false)
@@ -384,9 +383,6 @@ bool CRustInjector::Initialize(HINSTANCE hInstance) {
     // Initialize ESP system
     m_esp = std::make_unique<ESP>(m_memoryManager.get(), m_renderer.get());
     m_esp->Initialize();
-
-    // Initialize Aimbot system
-    m_aimbot = std::make_unique<MIT::Aimbot>(m_memoryManager.get());
     
     ShowWindow(m_hwnd, SW_SHOW);
     UpdateWindow(m_hwnd);
@@ -648,75 +644,18 @@ void CRustInjector::RenderFrame() {
     // Update and render ESP
     if (m_esp && m_espEnabled) {
         // Sync GUI settings to ESP config
-        MIT::ESPConfig espConfig;
-        espConfig.enabled = m_visualPlayer.enabled;
-        espConfig.playerESPEnabled = m_visualPlayer.enabled;
-        espConfig.playerBox2D = m_visualPlayer.box2D;
-        espConfig.playerBox3D = m_visualPlayer.box3D;
-        espConfig.playerSkeleton = m_visualPlayer.skeleton;
-        espConfig.playerHealthBar = m_visualPlayer.healthBar;
-        espConfig.playerName = m_visualPlayer.showName;
-        espConfig.playerDistance = m_visualPlayer.showDistance;
-        espConfig.playerWeapon = m_visualPlayer.showWeapon;
-        espConfig.playerAmmo = m_visualPlayer.showAmmo;
-        espConfig.playerSleeper = m_visualPlayer.sleeperESP;
-        espConfig.playerShowTeam = m_visualPlayer.showTeam;
-        espConfig.playerShowWounded = m_visualPlayer.showWounded;
-        espConfig.playerShowDead = m_visualPlayer.showDead;
-        espConfig.playerTeamIndicator = m_visualPlayer.teamIndicator;
-        espConfig.npcESPEnabled = m_visualNpc.enabled;
-        espConfig.npcName = m_visualNpc.showName;
-        espConfig.npcBox = m_visualNpc.box;
-        espConfig.npcFill = m_visualNpc.fill;
-        espConfig.npcDistance = m_visualNpc.distance;
-        espConfig.npcChams = m_visualNpc.chams;
-        espConfig.npcRedGlow = m_visualNpc.redGlow;
-        espConfig.resourceSulfur = m_worldResources.sulfurNodes;
-        espConfig.resourceMetal = m_worldResources.metalNodes;
-        espConfig.resourceStone = m_worldResources.stoneNodes;
-        espConfig.resourceDistance = m_worldResources.resourceDistance;
-        espConfig.lootEliteCrates = m_worldLoot.eliteCrates;
-        espConfig.lootMilitaryCrates = m_worldLoot.militaryCrates;
-        espConfig.lootAirDrops = m_worldLoot.airDrops;
-        espConfig.lootLockedCrates = m_worldLoot.lockedCrates;
-        espConfig.lootStash = m_worldLoot.stashESP;
-        espConfig.lootDistance = m_worldLoot.lootDistance;
-        espConfig.baseToolCupboard = m_worldBase.toolCupboard;
-        espConfig.baseAuthorizedPlayers = m_worldBase.authorizedPlayers;
-        espConfig.baseOutline = m_worldBase.baseOutline;
-        espConfig.trapLandMines = m_worldTraps.landMines;
-        espConfig.trapBearTraps = m_worldTraps.bearTraps;
-        espConfig.trapAutoTurrets = m_worldTraps.autoTurrets;
-        espConfig.trapFlameTurrets = m_worldTraps.flameTurrets;
-        espConfig.trapShowRange = m_worldTraps.showRange;
-        espConfig.chamsEnabled = m_visualPlayer.chams;
-        espConfig.chamsGlow = m_visualPlayer.chamsGlow;
-        espConfig.glowEnabled = m_visualOverride.enableGlow;
-        espConfig.glowIntensity = m_visualOverride.glowIntensity;
-        espConfig.outlinesEnabled = m_visualOverride.enableOutlines;
-        espConfig.outlineThickness = m_visualOverride.outlineThickness;
-        espConfig.customReticle = m_visualOverride.customReticle;
-        espConfig.reticleType = m_visualOverride.reticleType;
+        MIT::ESPConfig espConfig = m_esp->GetConfig();
+        espConfig.enabled = m_espEnabled;
+        espConfig.showCircleESP = m_espShowCircle;
+        espConfig.showInventory = m_espShowInventory;
+        espConfig.showWeaponChams = m_espShowChams;
+        espConfig.galaxyMode = m_espGalaxyMode;
+        espConfig.maxDistance = m_espMaxDistance;
+        espConfig.circleRadius = m_espCircleRadius;
         m_esp->SetConfig(espConfig);
         
         m_esp->Update();
         m_esp->Render();
-
-        // Update Aimbot
-        if (m_aimbot) {
-            MIT::AimbotConfig aimbotConfig;
-            aimbotConfig.enabled = m_aimbotGeneral.enabled;
-            aimbotConfig.silentAim = m_aimbotGeneral.silentAim;
-            aimbotConfig.prediction = m_aimbotGeneral.prediction;
-            aimbotConfig.smoothing = m_aimbotGeneral.smoothing;
-            aimbotConfig.visibleCheck = m_aimbotGeneral.visibleCheck;
-            aimbotConfig.fovRadius = m_aimbotGeneral.fovRadius;
-            aimbotConfig.smoothness = m_aimbotGeneral.smoothness;
-            aimbotConfig.targetBone = m_aimbotGeneral.targetBone;
-            aimbotConfig.noRecoil = m_noRecoilEnabled;
-            aimbotConfig.noSpread = m_noSpreadEnabled;
-            m_aimbot->Update(aimbotConfig);
-        }
     }
     
     ImGui::Render();
@@ -1076,6 +1015,25 @@ void CRustInjector::RenderAimbotPage() {
 }
 
 void CRustInjector::RenderVisualsPage() {
+    // Sync structs with legacy state
+    m_visualPlayer.enabled = m_espEnabled;
+    m_visualPlayer.box2D = m_espPlayerBox;
+    m_visualPlayer.skeleton = m_espPlayerSkeleton;
+    m_visualPlayer.healthBar = m_espPlayerHealth;
+    m_visualPlayer.showName = m_espPlayerName;
+    m_visualPlayer.showDistance = m_espPlayerDistance;
+    m_visualPlayer.showWeapon = m_espPlayerWeapon;
+    m_visualPlayer.showAmmo = m_espShowAmmo;
+    m_visualPlayer.showTeam = m_espPlayerTeam;
+    m_visualPlayer.showWounded = m_espPlayerWounded;
+    m_visualPlayer.showDead = m_espPlayerDead;
+    m_visualPlayer.teamIndicator = m_espTeamIndicator;
+    m_visualPlayer.chams = m_chamsEnabled;
+    m_visualPlayer.chamsGlow = m_chamsOpacity;
+
+    m_visualOverride.enableGlow = m_glowEnabled;
+    m_visualOverride.glowIntensity = m_glowIntensity;
+    m_visualNpc.enabled = m_espShowNPCs;
 
     if (ImGui::BeginTable("VisualLayout", 2, ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_NoBordersInBody)) {
         ImGui::TableNextColumn();
@@ -1138,6 +1096,25 @@ void CRustInjector::RenderVisualsPage() {
         ImGui::EndTable();
     }
 
+    // Propagate back to legacy variables
+    m_espEnabled = m_visualPlayer.enabled;
+    m_espPlayerBox = m_visualPlayer.box2D;
+    m_espPlayerSkeleton = m_visualPlayer.skeleton;
+    m_espPlayerHealth = m_visualPlayer.healthBar;
+    m_espPlayerName = m_visualPlayer.showName;
+    m_espPlayerDistance = m_visualPlayer.showDistance;
+    m_espPlayerWeapon = m_visualPlayer.showWeapon;
+    m_espShowAmmo = m_visualPlayer.showAmmo;
+    m_espPlayerTeam = m_visualPlayer.showTeam;
+    m_espPlayerWounded = m_visualPlayer.showWounded;
+    m_espPlayerDead = m_visualPlayer.showDead;
+    m_espTeamIndicator = m_visualPlayer.teamIndicator;
+    m_chamsEnabled = m_visualPlayer.chams;
+    m_chamsOpacity = m_visualPlayer.chamsGlow;
+
+    m_glowEnabled = m_visualOverride.enableGlow;
+    m_glowIntensity = m_visualOverride.glowIntensity;
+    m_espShowNPCs = m_visualNpc.enabled;
 }
 
 void CRustInjector::RenderWorldPage() {

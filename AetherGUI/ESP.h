@@ -5,76 +5,28 @@
 #include "../MenuPath/imgui/imgui.h"
 
 namespace MIT {
-        struct ESPConfig {
-        // Master switch
+    struct ESPConfig {
         bool enabled = true;
-
-        // Player ESP
-        bool playerESPEnabled = true;
-        bool playerBox2D = true;
-        bool playerBox3D = false;
-        bool playerSkeleton = true;
-        bool playerHealthBar = true;
-        bool playerName = true;
-        bool playerDistance = true;
-        bool playerWeapon = true;
-        bool playerAmmo = true;
-        bool playerSleeper = true;
-        bool playerShowTeam = true;
-        bool playerShowWounded = true;
-        bool playerShowDead = true;
-        bool playerTeamIndicator = true;
-
-        // NPC ESP
-        bool npcESPEnabled = true;
-        bool npcName = true;
-        bool npcBox = true;
-        bool npcFill = false;
-        bool npcDistance = true;
-        bool npcChams = true;
-        float npcRedGlow = 0.75f;
-
-        // World ESP - Resources
-        bool resourceSulfur = true;
-        bool resourceMetal = true;
-        bool resourceStone = true;
-        float resourceDistance = 250.0f;
-
-        // World ESP - Loot
-        bool lootEliteCrates = true;
-        bool lootMilitaryCrates = true;
-        bool lootAirDrops = true;
-        bool lootLockedCrates = true;
-        bool lootStash = true;
-        float lootDistance = 200.0f;
-
-        // World ESP - Bases & Traps
-        bool baseToolCupboard = true;
-        bool baseAuthorizedPlayers = true;
-        bool baseOutline = true;
-        bool trapLandMines = true;
-        bool trapBearTraps = true;
-        bool trapAutoTurrets = true;
-        bool trapFlameTurrets = true;
-        bool trapShowRange = true;
-
-        // Visual Overrides
-        bool chamsEnabled = true;
-        float chamsGlow = 0.65f;
-        bool glowEnabled = true;
-        float glowIntensity = 0.8f;
-        bool outlinesEnabled = true;
-        float outlineThickness = 1.5f;
-        bool customReticle = true;
-        int reticleType = 2;
-
-        // Colors
+        bool showPlayers = true;
+        bool showOre = true;
+        bool showLoot = true;
+        bool showBoundingBoxes = false; // Changed to circle ESP
+        bool showCircleESP = true; // New circle ESP
+        bool showNames = true;
+        bool showDistance = true;
+        bool showInventory = true; // New inventory ESP
+        bool showWeaponChams = true; // New gun coloring
+        bool galaxyMode = false; // Galaxy texture effect
+        float maxDistance = 500.0f;
         ImVec4 playerColor = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
-        ImVec4 teamColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
-        ImVec4 woundedColor = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);
-        ImVec4 deadColor = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
-        ImVec4 npcColor = ImVec4(1.0f, 0.5f, 0.0f, 1.0f);
-        ImVec4 chamsColor = ImVec4(1.0f, 0.0f, 1.0f, 1.0f);
+        ImVec4 oreColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
+        ImVec4 lootColor = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);
+        ImVec4 chamsColor = ImVec4(1.0f, 0.0f, 1.0f, 1.0f); // Pink for gun coloring
+        ImVec4 galaxyColor1 = ImVec4(0.3f, 0.0f, 0.6f, 1.0f); // Deep purple
+        ImVec4 galaxyColor2 = ImVec4(0.0f, 0.4f, 0.9f, 1.0f); // Deep blue
+        ImVec4 galaxyColor3 = ImVec4(0.8f, 0.2f, 0.6f, 1.0f); // Magenta
+        float circleRadius = 30.0f;
+        float circleThickness = 2.0f;
     };
 
     class ESP {

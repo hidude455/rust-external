@@ -8,9 +8,7 @@ namespace MIT {
         DWORD processId;
         std::mutex memoryMutex;
         bool isAttached;
-        uintptr_t m_gameAssemblyBase;
-        uintptr_t m_localPlayer;
-
+        
         // Junk code obfuscation
         std::random_device rd;
         std::mt19937 gen;

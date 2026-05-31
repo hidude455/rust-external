@@ -35,53 +35,17 @@ namespace MIT {
 
     enum class EntityType {
         Player,
-        NPC,
-
-        // Resources
-        StoneNode,
-        MetalNode,
-        SulfurNode,
-
-        // Loot Containers
-        EliteCrate,
-        MilitaryCrate,
-        NormalCrate,
-        Airdrop,
-        LockedCrate,
-        Stash,
-        Toolbox,
-        Corpse,
-
-        // Traps
-        AutoTurret,
-        FlameTurret,
-        BearTrap,
-        LandMine,
-        SAMSite,
-
-        // Bases
-        ToolCupboard,
-
-        // Vehicles
-        Helicopter,
-        BradleyAPC,
-        Minicopter,
-        ScrapHeli,
-
-        // Other
-        DroppedItem,
+        Ore,
+        Loot,
         Unknown
     };
 
     struct Entity {
-        uintptr_t ptr; // Pointer to the entity object
         Vector3 position;
         EntityType type;
         float distance;
         std::string name;
-        std::string className;
         bool isVisible;
-        bool is_npc;
     };
 
     struct WeaponData {
