@@ -1,4 +1,5 @@
 #include "RustInjector.h"
+#include "ConfigurationManager.h"
 #include <d3dcompiler.h>
 #include <fstream>
 #include <sstream>
@@ -38,6 +39,7 @@ CRustInjector::CRustInjector()
     , m_renderer(nullptr)
     , m_esp(nullptr)
     , m_aimbot(nullptr)
+    , m_configManager(std::make_unique<ConfigurationManager>(this))
     , m_running(false)
     , m_initialized(false)
     , m_driverLoaded(false)
@@ -2232,15 +2234,29 @@ void CRustInjector::UpdateTooltip(float deltaTime) {
 
 // Advanced Features Implementation
 void CRustInjector::SaveConfig() {
-    // Config saving implementation would go here
-    // For now, just log it
-    AppendLog("[INFO] Config saved");
+    if (m_configManager) {
+        if (m_cloud.selectedProfile >= 0 && m_cloud.selectedProfile < m_cloud.profiles.size()) {
+            std::string profileName = m_cloud.profiles[m_cloud.selectedProfile].name;
+            if (m_configManager->SaveConfiguration(profileName)) {
+                AppendLog("[INFO] Config saved: " + profileName);
+                return;
+            }
+        }
+    }
+    AppendLog("[ERROR] Failed to save config");
 }
 
 void CRustInjector::LoadConfig() {
-    // Config loading implementation would go here
-    // For now, just log it
-    AppendLog("[INFO] Config loaded");
+    if (m_configManager) {
+        if (m_cloud.selectedProfile >= 0 && m_cloud.selectedProfile < m_cloud.profiles.size()) {
+            std::string profileName = m_cloud.profiles[m_cloud.selectedProfile].name;
+            if (m_configManager->LoadConfiguration(profileName)) {
+                AppendLog("[INFO] Config loaded: " + profileName);
+                return;
+            }
+        }
+    }
+    AppendLog("[ERROR] Failed to load config");
 }
 
 void CRustInjector::RegisterHotkey(int key, bool ctrl, bool shift, bool alt, const char* action) {

@@ -91,6 +91,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="RustInjector.cpp" />
+    <ClCompile Include="ConfigurationManager.cpp" />
     <ClCompile Include="Injector.cpp" />
     <ClCompile Include="KernelInterface.cpp" />
     <ClCompile Include="MemoryManager.cpp" />
@@ -98,8 +99,6 @@
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="RendererDX.cpp" />
     <ClCompile Include="Core.cpp" />
-    <ClCompile Include="DllMain.cpp" />
-    <ClCompile Include="main.cpp" />
     <ClCompile Include="..\MenuPath\imgui\imgui.cpp" />
     <ClCompile Include="..\MenuPath\imgui\imgui_draw.cpp" />
     <ClCompile Include="..\MenuPath\imgui\imgui_tables.cpp" />
@@ -109,6 +108,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RustInjector.h" />
+    <ClInclude Include="ConfigurationManager.h" />
     <ClInclude Include="Injector.h" />
     <ClInclude Include="KernelInterface.h" />
     <ClInclude Include="MemoryManager.h" />

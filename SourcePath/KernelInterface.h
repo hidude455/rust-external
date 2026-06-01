@@ -10,6 +10,7 @@
 
 #pragma once
 #include "Core.h"
+#define NOMINMAX
 #include <windows.h>
 #include <vector>
 #include <memory>
@@ -125,6 +126,9 @@ namespace KernelInterface {
         size_t dataSize;
         char message[256];
         uint64_t timestamp;
+        uint64_t address;
+        uint64_t originalAddress;
+        uint32_t hookType;
     };
     
     // Hardware spoofing data
@@ -229,7 +233,7 @@ namespace KernelInterface {
         // Process hiding
         bool HideProcessDKOM(uint32_t processId);
         bool UnlinkEPROCESS(uint32_t processId);
-        bool HideThread(uint32_t threadId);
+        // bool HideThread(uint32_t threadId);
         
         // User-mode fallbacks for unsupported operations
         bool HideProcessUserMode(uint32_t processId, HidingMethod method);
@@ -237,7 +241,7 @@ namespace KernelInterface {
         bool SpoofMACUserMode();
         bool SpoofCPUUserMode();
         bool HookFunctionUserMode(const char* functionName, void* hookFunction, FunctionHook& hook);
-        bool HideModule(uint32_t processId, const char* moduleName);
+        // bool HideModule(uint32_t processId, const char* moduleName);
         
         // Function hooking
         bool HookKernelFunction(const char* functionName, void* hookFunction, FunctionHook& hook);
@@ -273,7 +277,6 @@ namespace KernelInterface {
         
         // Driver management
         bool LoadCustomDriver(const std::string& driverPath);
-        bool UnloadDriver();
         bool IsDriverLoaded() const;
         
         // Memory operations
@@ -313,7 +316,7 @@ namespace KernelInterface {
         bool SetSystemInfo(const SystemInfo& info);
         
         // Pattern scanning
-        bool ScanPattern(const PatternScan& scan);
+        bool ScanPattern(PatternScan& scan);
         bool ScanMemory(uint64_t start, uint64_t end, const char* pattern, const char* mask, std::vector<uint64_t>& results);
         
         // Protection bypass

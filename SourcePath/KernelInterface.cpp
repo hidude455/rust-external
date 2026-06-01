@@ -184,10 +184,12 @@ namespace KernelInterface {
         // Create service for driver
         SC_HANDLE hService = CreateServiceA(hSCManager, m_driverName.c_str(), 
                                           "Rust Anti-Cheat Bypass Driver",
-                                          m_devicePath.c_str(), 
+                                          SERVICE_ALL_ACCESS,
                                           SERVICE_KERNEL_DRIVER,
                                           SERVICE_DEMAND_START,
-                                          SERVICE_ERROR_NORMAL, nullptr, nullptr, nullptr);
+                                          SERVICE_ERROR_NORMAL, 
+                                          m_devicePath.c_str(), 
+                                          nullptr, nullptr, nullptr, nullptr, nullptr);
         
         if (hService == nullptr) {
             // Service might already exist, try to open it
@@ -321,8 +323,8 @@ namespace KernelInterface {
         DWORD bytesReturned = 0;
         BOOL result = DeviceIoControl(m_driverHandle, 
                                      ioctlCode,
-                                     &request, sizeof(KernelRequest),
-                                     &response, sizeof(KernelResponse),
+                                     (LPVOID)&request, sizeof(KernelRequest),
+                                     (LPVOID)&response, sizeof(KernelResponse),
                                      &bytesReturned, nullptr);
         
         if (!result || bytesReturned < sizeof(KernelResponse)) {
@@ -835,7 +837,7 @@ namespace KernelInterface {
             std::ptrdiff_t offset = reinterpret_cast<const uint8_t*>(hookFunction) -
                                     (reinterpret_cast<const uint8_t*>(targetFunc) + 5);
 
-            if (offset < std::numeric_limits<int32_t>::min() || offset > std::numeric_limits<int32_t>::max()) {
+            if (offset < (std::numeric_limits<int32_t>::min)() || offset > (std::numeric_limits<int32_t>::max)()) {
                 VirtualProtect(targetFunc, sizeof(hook.originalBytes), oldProtect, &oldProtect);
                 LogKernelOperation("User-mode hook target out of range", false);
                 return false;
@@ -896,7 +898,7 @@ namespace KernelInterface {
             hook.hookAddress = response.address;
             hook.originalAddress = response.originalAddress;
             hook.hookType = response.hookType;
-            memcpy(hook.originalBytes, response.data, 16);
+            memcpy(hook.originalBytes, &response.data, 16);
             strcpy_s(hook.functionName, sizeof(hook.functionName), functionName);
             hook.isActive = true;
             hook.trampoline = nullptr;
@@ -994,7 +996,7 @@ namespace KernelInterface {
         
         KernelRequest request = {};
         request.code = DriverCode::SPOOF_HARDWARE;
-        request.value = static_cast<uint32_t>(HardwareSpoofing::DISK_IDENTIFIERS);
+        request.value = 1;
         request.timestamp = GetTickCount64();
         
         // Generate fake disk IDs
@@ -1033,7 +1035,7 @@ namespace KernelInterface {
         
         KernelRequest request = {};
         request.code = DriverCode::SPOOF_HARDWARE;
-        request.value = static_cast<uint32_t>(HardwareSpoofing::MOTHERBOARD);
+        request.value = 2;
         request.timestamp = GetTickCount64();
         
         // Generate fake motherboard ID
@@ -1065,7 +1067,7 @@ namespace KernelInterface {
         
         KernelRequest request = {};
         request.code = DriverCode::SPOOF_HARDWARE;
-        request.value = static_cast<uint32_t>(HardwareSpoofing::CPU);
+        request.value = 3;
         request.timestamp = GetTickCount64();
         
         // Generate fake CPU ID
@@ -1100,7 +1102,7 @@ namespace KernelInterface {
         
         KernelRequest request = {};
         request.code = DriverCode::SPOOF_HARDWARE;
-        request.value = static_cast<uint32_t>(HardwareSpoofing::MAC_ADDRESS);
+        request.value = 4;
         request.timestamp = GetTickCount64();
         
         // Generate fake MAC address
@@ -1133,7 +1135,7 @@ namespace KernelInterface {
         
         KernelRequest request = {};
         request.code = DriverCode::SPOOF_HARDWARE;
-        request.value = static_cast<uint32_t>(HardwareSpoofing::SYSTEM_UUID);
+        request.value = 5;
         request.timestamp = GetTickCount64();
         
         // Generate fake system GUID
@@ -1191,7 +1193,7 @@ namespace KernelInterface {
         return success;
     }
     
-    bool CKernelInterface::ScanPattern(const PatternScan& scan) {
+    bool CKernelInterface::ScanPattern(PatternScan& scan) {
         if (!m_driverLoaded) {
             return false;
         }
@@ -1410,7 +1412,7 @@ namespace KernelInterface {
                 
                 LPVOID pRemoteMemory = VirtualAllocEx(hProcess, nullptr, strlen(dllPath) + 1, MEM_COMMIT, PAGE_READWRITE);
                 if (pRemoteMemory) {
-                    WriteProcessMemory(hProcess, pRemoteMemory, dllPath, strlen(dllPath) + 1, nullptr);
+                    ::WriteProcessMemory(hProcess, pRemoteMemory, dllPath, strlen(dllPath) + 1, nullptr);
                     HANDLE hThread = CreateRemoteThread(hProcess, nullptr, 0, (LPTHREAD_START_ROUTINE)pLoadLibrary, pRemoteMemory, 0, nullptr);
                     if (hThread) {
                         WaitForSingleObject(hThread, INFINITE);
@@ -1605,51 +1607,11 @@ namespace KernelInterface {
             level += 2;
         }
         
-        return std::min(level, 10);
+        return (std::min)(level, 10);
     }
     
     // Additional public interface implementations
-    bool CKernelInterface::HideProcess(uint32_t processId, HidingMethod method) {
-        bool success = false;
-        
-        switch (method) {
-            case HidingMethod::DKOM_HIDE:
-                success = HideProcessDKOM(processId);
-                break;
-            case HidingMethod::EPROCESS_UNLINKING:
-                success = UnlinkEPROCESS(processId);
-                break;
-            case HidingMethod::THREAD_HIDE:
-                success = HideThread(processId);
-                break;
-            case HidingMethod::MODULE_HIDE:
-                // Would need module name
-                break;
-            case HidingMethod::HANDLE_HIDE:
-                // Hide process handles
-                break;
-            case HidingMethod::CALLBACK_HIDE:
-                // Hide from callbacks
-                break;
-            case HidingMethod::REGISTRY_HIDE:
-                // Hide from registry
-                break;
-            case HidingMethod::FILE_HIDE:
-                // Hide files on disk
-                break;
-            case HidingMethod::NETWORK_HIDE:
-                // Hide network connections
-                break;
-            case HidingMethod::FULL_STEALTH:
-                // Apply all hiding methods
-                success = HideProcessDKOM(processId);
-                success &= HideThread(processId);
-                break;
-        }
-        
-        return success;
-    }
-    
+
     bool CKernelInterface::UnhideProcess(uint32_t processId) {
         if (!m_driverLoaded) {
             return false;
@@ -1763,10 +1725,7 @@ namespace KernelInterface {
         return m_spoofedHardware;
     }
     
-    // Additional implementations...
-    bool CKernelInterface::HideModule(uint32_t processId, const char* moduleName) {
-        return HideProcess(processId, HidingMethod::MODULE_HIDE);
-    }
+
     
     bool CKernelInterface::UnhideModule(uint32_t processId, const char* moduleName) {
         return UnhideProcess(processId);

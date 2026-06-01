@@ -18,11 +18,11 @@ extern MIT::MemoryManager* g_pMemoryManager;
 
 namespace offsets {
     namespace base_networkable_o {
-        inline uintptr_t klass = 0xE1598D0;
-        inline uintptr_t entity = 0x10;
-        inline uintptr_t parent_static_fields = 0x10;
-        inline uintptr_t static_fields = 0xB8;
-        inline uintptr_t wrapper_class_ptr = 0x18;
+        constexpr uintptr_t klass = 0xE1598D0;
+        constexpr uintptr_t entity = 0x10;
+        constexpr uintptr_t parent_static_fields = 0x10;
+        constexpr uintptr_t static_fields = 0xB8;
+        constexpr uintptr_t wrapper_class_ptr = 0x18;
     }
 
     namespace entity_list {
@@ -31,25 +31,25 @@ namespace offsets {
     }
 
     namespace base_player_o {
-        inline uintptr_t player_model = 0x2C8;
-        inline uintptr_t model_state = 0x378;
+        constexpr uintptr_t player_model = 0x2C8;
+        constexpr uintptr_t model_state = 0x378;
     }
 
     namespace model_state_o {
-        inline uintptr_t flags = 0x70;
+        constexpr uintptr_t flags = 0x70;
     }
 
     namespace player_model_o {
-        inline uintptr_t position = 0x2b8; // This seems to be the same, but let's keep it for clarity
-        inline uintptr_t is_npc = 0x3c8;
+        constexpr uintptr_t position = 0x2b8; // This seems to be the same, but let's keep it for clarity
+        constexpr uintptr_t is_npc = 0x3c8;
     }
 
     namespace main_camera_c_o {
-        inline uintptr_t klass = 0xE1CB9D0;
+        constexpr uintptr_t klass = 0xE1CB9D0;
     }
 
     namespace main_camera_o {
-        inline uintptr_t static_fields = 0xB8;
+        constexpr uintptr_t static_fields = 0xB8;
     }
 
 } // namespace offsets

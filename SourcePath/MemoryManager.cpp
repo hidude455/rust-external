@@ -269,10 +269,10 @@ namespace MIT {
     Vector3 MemoryManager::GetLocalPlayerPosition() {
         if (!m_localPlayer) return Vector3{};
 
-        uintptr_t player_model = ReadMemory<uintptr_t>(m_localPlayer + offsets::base_player::playerModel);
+        uintptr_t player_model = ReadMemory<uintptr_t>(m_localPlayer + offsets::base_player_o::player_model);
         if (!player_model) return Vector3{};
 
-        return ReadMemory<Vector3>(player_model + offsets::player_model::position);
+        return ReadMemory<Vector3>(player_model + offsets::player_model_o::position);
     }
 
     bool MemoryManager::IsProcessValid() {

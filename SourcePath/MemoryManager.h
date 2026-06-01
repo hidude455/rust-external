@@ -8,8 +8,12 @@ namespace MIT {
         DWORD processId;
         std::mutex memoryMutex;
         bool isAttached;
+
+    public:
         uintptr_t m_gameAssemblyBase;
         uintptr_t m_localPlayer;
+
+    private:
 
         // Junk code obfuscation
         std::random_device rd;
@@ -57,6 +61,7 @@ namespace MIT {
         }
 
         uintptr_t GetModuleBaseAddress(const std::string& moduleName);
+        EntityType GetEntityType(const std::string& className);
         std::vector<Entity> GetEntities();
         WeaponData GetCurrentWeapon();
         Vector3 GetLocalPlayerPosition();

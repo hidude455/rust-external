@@ -17,6 +17,8 @@
 #include "RendererDX.h"
 #include "../MenuPath/imgui/imgui.h"
 
+class ConfigurationManager;
+
 struct PageHeaderData {
     const char* title;
     const char* subtitle;
@@ -26,6 +28,7 @@ struct PageHeaderData {
 };
 
 class CRustInjector {
+    friend class ConfigurationManager;
 public:
     CRustInjector();
     ~CRustInjector();
@@ -122,6 +125,8 @@ private:
     std::unique_ptr<Renderer> m_renderer;
     std::unique_ptr<ESP> m_esp;
     std::unique_ptr<MIT::Aimbot> m_aimbot;
+    std::unique_ptr<MIT::MiscFeatures> m_miscFeatures;
+    std::unique_ptr<ConfigurationManager> m_configManager;
     bool m_running;
     bool m_initialized;
     bool m_driverLoaded;

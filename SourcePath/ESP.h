@@ -67,6 +67,7 @@ namespace MIT {
         float outlineThickness = 1.5f;
         bool customReticle = true;
         int reticleType = 2;
+        bool galaxyMode = false;
 
         // Colors
         ImVec4 playerColor = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
